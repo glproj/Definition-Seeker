@@ -2,7 +2,7 @@ import keyboard_shortcuts, requests, bs4, pyperclip, os, ast, readline, atexit, 
 from word_info_extractor import *
 from image_extractor import *
 from ebook_search import *
-from programs import *
+import programs
 from pathlib import Path
 
 histfile = os.path.join(os.path.expanduser("~"), ".wiktionary_history")
@@ -47,9 +47,6 @@ arg_parser.add_argument(
     help="The source you are going to search from. Valid values: wiktionary (default), dwds, duden",
 )
 args = arg_parser.parse_args()
-
-
-VALID_LANGUAGE_CODES = ["en", "de"]
 str_valid_lc = ", ".join(VALID_LANGUAGE_CODES)
 print(
     "Current language: " + CONFIG_PARSER["DEFAULT"]["Language"],
@@ -67,12 +64,12 @@ setup_ebooks()
 while True:
     language = CONFIG_PARSER["DEFAULT"]["Language"]
     if language == "en":
-        ENProgram(args=vars(args))
+        programs.ENProgram(args=vars(args))
         if vars(args).get("word"):
             break
         continue
     elif language == "de":
-        DEProgram(args=vars(args))
+        programs.DEProgram(args=vars(args))
         if vars(args).get("word"):
             break
         continue

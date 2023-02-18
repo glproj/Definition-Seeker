@@ -1,7 +1,7 @@
-import termcolor
+import termcolor, ebook_search
 from word_info_extractor import *
-from ebook_search import *
-
+import pyperclip
+VALID_LANGUAGE_CODES = ["en", "de"]
 class Program:
     def __init__(self, word_class, args={}, language=""):
         self.ebooks_txt(language)
@@ -86,7 +86,7 @@ class Program:
         else:
             inflections = word.get_inflections(self.previous_word.root_page)
         for book_txt in self.ebook_list:
-            examples = get_examples(inflections, book_txt)
+            examples = ebook_search.get_examples(inflections, book_txt)
             for example in examples:
                 print(example + "\n")
 
@@ -97,7 +97,7 @@ class Program:
             return default
 
     def ebooks_txt(self, language: str):
-        directory = EBOOK_DIR / language
+        directory = ebook_search.EBOOK_DIR / language
         paths = absolute_file_paths(directory)
         self.ebook_list = []
         for path in paths:

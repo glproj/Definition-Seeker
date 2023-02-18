@@ -1,10 +1,11 @@
 import os, pathlib, re, termcolor, ebooklib, bs4, ast
 from pathlib import Path
 from ipdb import set_trace as s
+from programs import VALID_LANGUAGE_CODES
+from utils import *
 
 EBOOK_DIR = Path(__file__).parent / "ebooks"
-
-def setup_ebooks(ebook_paths: list, language: str):
+def setup_ebooks():
     try:
         for language in VALID_LANGUAGE_CODES:
             ebook_paths = CONFIG_PARSER[language]["ebook_paths"]
@@ -25,7 +26,7 @@ def setup_ebooks(ebook_paths: list, language: str):
 
 def epub_to_bs(epub_path: str):
     """Picks all EpubHtmls from the epub file and returns a nice BeautifulSoup object with them"""
-    book = ebooklib.epub.read_epub(epub_path, ignore_ncx=True)
+    book = ebooklib.epub.read_epub(epub_path, options={"ignore_ncx": True})
     book_items = book.get_items()
     ugly_book_html = bytes()
     for item in book_items:
