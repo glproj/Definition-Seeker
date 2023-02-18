@@ -61,6 +61,10 @@ wcwidth = "==0.2.6"
 [dev-packages]
 ipdb = "==0.13.11"
 ipython = "==8.10.0"
+black = "*"
 
 [requires]
 python_version = "3.10"
+
+[pipenv]
+allow_prereleases = true
