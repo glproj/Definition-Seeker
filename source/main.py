@@ -11,6 +11,8 @@ try:
 except FileNotFoundError:
     open(histfile, "wb").close()
     h_len = 0
+
+
 # --- exit handlers --
 def remove_q():
     h_len = readline.get_current_history_length()
@@ -44,14 +46,12 @@ arg_parser.add_argument(
     help="The source you are going to search from. Valid values: wiktionary (default), dwds, duden",
 )
 args = arg_parser.parse_args()
-CONFIG_PATH = os.path.dirname(os.path.realpath(__file__)) + "/.configfile.ini"
-config = configparser.ConfigParser()
-config.read(CONFIG_PATH)
+
 
 VALID_LANGUAGE_CODES = ["en", "de"]
 str_valid_lc = ", ".join(VALID_LANGUAGE_CODES)
 print(
-    "Current language: " + config["DEFAULT"]["Language"],
+    "Current language: " + CONFIG_PARSER["DEFAULT"]["Language"],
     "q=quit",
     "dwds=dwds' definition for the previous word",
     "duden=duden's definition for the previous word",
@@ -65,7 +65,7 @@ print("-" * 72)
 # --- ebook setup ---
 try:
     for language in VALID_LANGUAGE_CODES:
-        ebook_paths = config[language]["ebook_paths"]
+        ebook_paths = CONFIG_PARSER[language]["ebook_paths"]
         ebook_paths = ast.literal_eval(ebook_paths)
         setup_ebooks(ebook_paths, language)
 except KeyError as e:
@@ -82,8 +82,8 @@ class Program:
     def run(self, word_class, args={}):
         if vars(self).get("return_to_loop"):
             return
-        elif not vars(self).get('previous_word'):
-            self.previous_word = ''
+        elif not vars(self).get("previous_word"):
+            self.previous_word = ""
         input_ = (
             args.get("word", False)
             or str(input(termcolor.colored("Word: ", "red"))).strip()
@@ -165,6 +165,7 @@ class Program:
             return getattr(self, attr)
         except AttributeError:
             return default
+
     def ebooks_txt(self, language: str):
         directory = ebook_dir / language
         paths = absolute_file_paths(directory)
@@ -193,7 +194,7 @@ class ENProgram(Program):
 
 
 while True:
-    language = config["DEFAULT"]["Language"]
+    language = CONFIG_PARSER["DEFAULT"]["Language"]
     if language == "en":
         ENProgram(args=vars(args))
         if vars(args).get("word"):
