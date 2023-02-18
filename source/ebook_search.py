@@ -1,4 +1,5 @@
 import os, pathlib, re, termcolor, ebooklib, bs4, ast
+from pathlib import Path
 from ipdb import set_trace as s
 
 EBOOK_DIR = Path(__file__).parent / "ebooks"
