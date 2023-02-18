@@ -1,7 +1,9 @@
-import termcolor, ebook_search
+import termcolor, ebook_search, pyperclip, sys
 from word_info_extractor import *
-import pyperclip
+
 VALID_LANGUAGE_CODES = ["en", "de"]
+
+
 class Program:
     def __init__(self, word_class, args={}, language=""):
         self.ebooks_txt(language)
@@ -79,6 +81,7 @@ class Program:
             get_images_from_word(key_word)
         else:
             print("Your configuration file doesn't have GOOGLE_API")
+
     def examples(self, *args):
         word = " ".join(args) or self.previous_word
         if args:
