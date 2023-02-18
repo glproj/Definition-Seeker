@@ -1,17 +1,25 @@
-import os, pathlib, re, termcolor, ebooklib, bs4
+import os, pathlib, re, termcolor, ebooklib, bs4, ast
 from ipdb import set_trace as s
 
+EBOOK_DIR = Path(__file__).parent / "ebooks"
 
 def setup_ebooks(ebook_paths: list, language: str):
-    for ebook_path in ebook_paths:
-        ebook_name = os.path.splitext(os.path.basename(ebook_path))[0]
-        bs_ebook_path = (
-            pathlib.Path(__file__).parent / f"ebooks/{language}/{ebook_name}.txt"
-        )
-        if not bs_ebook_path.exists():
-            print(f"Setting up {ebook_name}...")
-            bs_ebook_path.parent.mkdir(exist_ok=True, parents=True)
-            bs_ebook_path.write_text(str(epub_to_bs(str(ebook_path)).text))
+    try:
+        for language in VALID_LANGUAGE_CODES:
+            ebook_paths = CONFIG_PARSER[language]["ebook_paths"]
+            ebook_paths = ast.literal_eval(ebook_paths)
+            for ebook_path in ebook_paths:
+                ebook_name = os.path.splitext(os.path.basename(ebook_path))[0]
+                bs_ebook_path = (
+                    pathlib.Path(__file__).parent / f"ebooks/{language}/{ebook_name}.txt"
+                )
+                if not bs_ebook_path.exists():
+                    print(f"Setting up {ebook_name}...")
+                    bs_ebook_path.parent.mkdir(exist_ok=True, parents=True)
+                    bs_ebook_path.write_text(str(epub_to_bs(str(ebook_path)).text))
+    except KeyError as e:
+        pass
+
 
 
 def epub_to_bs(epub_path: str):

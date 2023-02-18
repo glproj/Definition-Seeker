@@ -2,6 +2,7 @@ import keyboard_shortcuts, requests, bs4, pyperclip, os, ast, readline, atexit, 
 from word_info_extractor import *
 from image_extractor import *
 from ebook_search import *
+from programs import *
 from pathlib import Path
 
 histfile = os.path.join(os.path.expanduser("~"), ".wiktionary_history")
@@ -62,18 +63,6 @@ print(
     sep="\n",
 )
 print("-" * 72)
-# --- ebook setup ---
-try:
-    for language in VALID_LANGUAGE_CODES:
-        ebook_paths = CONFIG_PARSER[language]["ebook_paths"]
-        ebook_paths = ast.literal_eval(ebook_paths)
-        setup_ebooks(ebook_paths, language)
-except KeyError as e:
-    pass
-# --- ebook setup ---
-ebook_dir = Path(__file__).parent / "ebooks"
-
-
 class Program:
     def __init__(self, word_class, args={}, language=""):
         self.ebooks_txt(language)
@@ -195,6 +184,7 @@ class ENProgram(Program):
         super().__init__(ENDictionaryWord, args, "en")
 
 
+setup_ebooks()
 while True:
     language = CONFIG_PARSER["DEFAULT"]["Language"]
     if language == "en":
