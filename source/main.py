@@ -140,15 +140,17 @@ class Program:
         if (lang not in VALID_LANGUAGE_CODES) or not lang.strip():
             print(f"The language code should be one of the following: {str_valid_lc}")
             return
-        config["DEFAULT"]["Language"] = lang
+        CONFIG_PARSER["DEFAULT"]["Language"] = lang
         with open(CONFIG_PATH, "w") as file:
-            config.write(file)
+            CONFIG_PARSER.write(file)
         self.return_to_loop = True
 
     def images(self, *args):
-        key_word = " ".join(args) or self.previous_word
-        get_images_from_word(key_word)
-
+        if IMAGE_EXTRACTION:
+            key_word = " ".join(args) or self.previous_word
+            get_images_from_word(key_word)
+        else:
+            print("Your configuration file doesn't have GOOGLE_API")
     def examples(self, *args):
         word = " ".join(args) or self.previous_word
         if args:

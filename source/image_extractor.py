@@ -1,12 +1,16 @@
 from google_images_search import GoogleImagesSearch
-from decouple import config
 from utils import *
 import os, subprocess, re, pathlib, tempfile
 from ipdb import set_trace as s
 
-GOOGLE_SEARCH_API_KEY = config("GOOGLE_API_KEY")
-CX = config("CX")
-gis = GoogleImagesSearch(GOOGLE_SEARCH_API_KEY, CX)
+IMAGE_EXTRACTION = True
+try:
+    GOOGLE_SEARCH_API_KEY = CONFIG_PARSER["GOOGLE_IMAGE_API_KEY"]
+    CX = CONFIG_PARSER["CX"]
+    gis = GoogleImagesSearch(GOOGLE_SEARCH_API_KEY, CX)
+except KeyError:
+    IMAGE_EXTRACTION = False
+
 image_temp_directory = tempfile.TemporaryDirectory()
 IMAGE_DIR = pathlib.Path(image_temp_directory.name)
 
