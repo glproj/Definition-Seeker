@@ -84,7 +84,7 @@ class Program:
         if args:
             inflections = tuple([word])
         else:
-            inflections = word.get_inflections(self.previous_word.root_page)
+            inflections = self.previous_word.get_inflections()
         for book_txt in self.ebook_list:
             examples = ebook_search.get_examples(inflections, book_txt)
             for example in examples:
