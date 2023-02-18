@@ -130,3 +130,6 @@ dmypy.json
 
 #configfile
 .configfile.ini
+
+.vscode
+ebooks/
