@@ -1,5 +1,10 @@
 import glob, os, re, bs4, pathlib, termcolor, ipdb, requests
 from ebooklib import epub
+import configparser
+
+CONFIG_PATH = os.path.dirname(os.path.realpath(__file__)) + "/.configfile.ini"
+CONFIG_PARSER = configparser.ConfigParser()
+CONFIG_PARSER.read(CONFIG_PATH)
 
 TRENNBARE_PRÄFIXE = [
     "auseinander",
