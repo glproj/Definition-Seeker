@@ -1,7 +1,6 @@
 import termcolor, ebook_search, pyperclip, sys
 from word_info_extractor import *
-
-VALID_LANGUAGE_CODES = ["en", "de"]
+from utils import VALID_LANGUAGE_CODES
 
 
 class Program:
