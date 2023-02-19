@@ -4,7 +4,7 @@ import tkinter.scrolledtext
 import tkinter.filedialog
 from tkinter import ttk
 from ipdb import set_trace as s
-from source.utils import VALID_LANGUAGES, SUPPORTED_EXTENSIONS, CONFIG_PARSER
+from utils import VALID_LANGUAGES, SUPPORTED_EXTENSIONS, CONFIG_PARSER
 
 
 class ConfigSetter(ttk.Frame):
