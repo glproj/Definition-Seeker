@@ -19,7 +19,11 @@ class ConfigSetter(ttk.Frame):
 
         button_frame = ttk.Frame(self)
         language_buttons = [
-            ttk.Button(button_frame, text=language, command=self.ask_for_files)
+            ttk.Button(
+                button_frame,
+                text=language,
+                command=lambda lang=language: self.ask_for_files(lang),
+            )
             for language in VALID_LANGUAGES.values()
         ]
 
