@@ -41,7 +41,7 @@ class ConfigSetter(ttk.Frame):
         """Asks for file paths and then append
         (or write, more on that later) the paths of the files you
         chose to the self.file_paths_text widget. This method will
-        use self.last_language to decide whether it will write or 
+        use self.last_language to decide whether it will write or
         append to the Text widget.
         """
         file_paths = tkinter.filedialog.askopenfilenames()
@@ -52,11 +52,16 @@ class ConfigSetter(ttk.Frame):
         self.file_paths_text.insert("end", chars=escape + "\n".join(file_paths))
 
     def set_config(self):
-        pass
+        paths_list = self.file_paths_text.get("1.0", "end").strip().split("\n")
+        for lang_code, lang in VALID_LANGUAGES.items():
+            if lang == self.last_language:
+                CONFIG_PARSER[lang_code]["ebook_paths"] = str(paths_list)
+
 
 
 class ConfigViewer(ttk.Frame):
     """View CONFIG_PARSER contents"""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         pretty_config = ""
