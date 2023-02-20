@@ -31,8 +31,19 @@ class ConfigSetter(ttk.Frame):
         button_frame.grid(column=0, row=1)
         self.file_paths_text.grid(column=0, row=2)
 
-    def ask_for_files(self, *args):
-        pass
+    def ask_for_files(self, lang):
+        """Asks for file paths and then append
+        (or write, more on that later) the paths of the files you
+        chose to the self.file_paths_text widget. This method will
+        use self.last_language to decide whether it will write or 
+        append to the Text widget.
+        """
+        file_paths = tkinter.filedialog.askopenfilenames()
+        if not lang == self.last_language:
+            self.file_paths_text.delete("1.0", "end")
+        self.last_language = lang
+        escape = "\n" if self.file_paths_text.get("1.0", "end").strip() else ""
+        self.file_paths_text.insert("end", chars=escape + "\n".join(file_paths))
 
     def set_config(self):
         pass
