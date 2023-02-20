@@ -53,12 +53,13 @@ class ConfigSetter(ttk.Frame):
 
     def set_config(self):
         paths_list = self.file_paths_text.get("1.0", "end").strip().split("\n")
+        self.file_paths_text.delete("1.0", "end")
         for lang_code, lang in VALID_LANGUAGES.items():
             if lang == self.last_language:
                 CONFIG_PARSER[lang_code]["ebook_paths"] = str(paths_list)
 
     def finish(self):
-        with open(CONFIG_PATH, 'w') as config:
+        with open(CONFIG_PATH, "w") as config:
             CONFIG_PARSER.write(config)
 
 
@@ -140,6 +141,7 @@ class ConfigApp(tkinter.Tk):
         self.frames["ConfigSetter"].finish()
         self.destroy()
 
+
 class AlternatingButton(ttk.Button):
     """Button that alternates between commands.
     For example, if you pass (func1, func2) to command, the first
@@ -159,11 +161,12 @@ class AlternatingButton(ttk.Button):
         self.commands[index]()
         self.last_command_index = index
 
+
 def setup_initial_config_file():
-    CONFIG_PARSER["DEFAULT"]['Language']='en'
+    CONFIG_PARSER["DEFAULT"]["Language"] = "en"
     for lang_code in VALID_LANGUAGES.keys():
-        CONFIG_PARSER[lang_code] = {'ebook_paths': '[]'}
-    CONFIG_PARSER["DEFAULT"]["GOOGLE_SEARCH_API_KEY"] = ''
-    CONFIG_PARSER["DEFAULT"]["CX"] = ''
-    with open(CONFIG_PATH, 'w') as config:
+        CONFIG_PARSER[lang_code] = {"ebook_paths": "[]"}
+    CONFIG_PARSER["DEFAULT"]["GOOGLE_SEARCH_API_KEY"] = ""
+    CONFIG_PARSER["DEFAULT"]["CX"] = ""
+    with open(CONFIG_PATH, "w") as config:
         CONFIG_PARSER.write(config)
