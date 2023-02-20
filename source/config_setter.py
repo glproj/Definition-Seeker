@@ -51,7 +51,7 @@ class ConfigViewer(ttk.Frame):
         settings.pack()
 
 
-class SimpleApp(tkinter.Tk):
+class ConfigApp(tkinter.Tk):
     def __init__(self, *args, **kwargs):
         tkinter.Tk.__init__(self, *args, **kwargs)
 
@@ -106,5 +106,6 @@ class AlternatingButton(ttk.Button):
         self.last_command_index = index
 
 
-root = SimpleApp()
+root = ConfigApp()
+root.geometry('400x400')
 root.mainloop()
