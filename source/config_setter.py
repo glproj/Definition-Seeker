@@ -86,6 +86,24 @@ class SimpleApp(tkinter.Tk):
         """Show a frame for the given page name"""
         frame = self.frames[page_name]
         frame.tkraise()
+class AlternatingButton(ttk.Button):
+    """Button that alternates between commands.
+    For example, if you pass (func1, func2) to command, the first
+    time you click the button func1 will be executed. Second click, func2.
+    Third click, func1, and so on."""
+
+    def __init__(self, *args, **kwargs):
+        self.commands = kwargs["command"]
+        self.last_command_index = 1
+        kwargs["command"] = self.alternate
+        super().__init__(*args, **kwargs)
+        # self.commands = kwargs.pop('command')
+
+    def alternate(self):
+        """Alternate between commands"""
+        index = 1 if self.last_command_index == 0 else 0
+        self.commands[index]()
+        self.last_command_index = index
 
 
 root = SimpleApp()
