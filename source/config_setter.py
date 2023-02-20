@@ -95,7 +95,7 @@ class ConfigApp(tkinter.Tk):
         end_button = ttk.Button(
             bottom_buttons_frame,
             text="Finish",
-            command=self.frames["ConfigSetter"].finish,
+            command=self.finish_and_quit,
         )
         set_config_button = ttk.Button(
             bottom_buttons_frame,
@@ -136,6 +136,9 @@ class ConfigApp(tkinter.Tk):
         frame = class_(self.container)
         self.frames[page_name] = frame
 
+    def finish_and_quit(self):
+        self.frames["ConfigSetter"].finish()
+        self.destroy()
 
 class AlternatingButton(ttk.Button):
     """Button that alternates between commands.
