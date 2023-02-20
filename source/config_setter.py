@@ -4,7 +4,7 @@ import tkinter.scrolledtext
 import tkinter.filedialog
 from tkinter import ttk
 from ipdb import set_trace as s
-from utils import VALID_LANGUAGES, SUPPORTED_EXTENSIONS, CONFIG_PARSER
+from utils import VALID_LANGUAGES, SUPPORTED_EXTENSIONS, CONFIG_PARSER, CONFIG_PATH
 
 
 class ConfigSetter(ttk.Frame):
@@ -59,6 +59,7 @@ class ConfigSetter(ttk.Frame):
 
 
 
+
 class ConfigViewer(ttk.Frame):
     """View CONFIG_PARSER contents"""
 
@@ -78,19 +79,24 @@ class ConfigApp(tkinter.Tk):
     def __init__(self, *args, **kwargs):
         tkinter.Tk.__init__(self, *args, **kwargs)
 
-        self.title_font = tkfont.Font(
-            family="Helvetica", size=18, weight="bold", slant="italic"
-        )
+        self.container = tkinter.Frame(self)
+        self.container.pack(side="top", fill="both", expand=True)
+        self.container.grid_rowconfigure(0, weight=1)
+        self.container.grid_columnconfigure(0, weight=1)
 
-        container = tkinter.Frame(self)
-        container.pack(side="top", fill="both", expand=True)
-        container.grid_rowconfigure(0, weight=1)
-        container.grid_columnconfigure(0, weight=1)
+        self.frames = {}
 
-        bottom_buttons_frame = ttk.Frame(container)
+        for F in (ConfigSetter, ConfigViewer):
+            self.update_frames(F)
+
+        bottom_buttons_frame = ttk.Frame(self.container)
         end_button = ttk.Button(bottom_buttons_frame, text="Finish")
-        set_config_button = ttk.Button(bottom_buttons_frame, text="Set Config")
-        self.view_config_text = tkinter.StringVar(container, "View Config")
+        set_config_button = ttk.Button(
+            bottom_buttons_frame,
+            text="Set Config",
+            command=self.frames["ConfigSetter"].set_config,
+        )
+        self.view_config_text = tkinter.StringVar(self.container, "View Config")
         view_config_button = AlternatingButton(
             bottom_buttons_frame,
             textvariable=self.view_config_text,
@@ -99,12 +105,6 @@ class ConfigApp(tkinter.Tk):
         end_button.pack(side="right")
         set_config_button.pack(side="right")
         view_config_button.pack(side="right")
-
-        self.frames = {}
-        for F in (ConfigSetter, ConfigViewer):
-            page_name = F.__name__
-            frame = F(container)
-            self.frames[page_name] = frame
 
         bottom_buttons_frame.grid(column=0, row=1, sticky="E")
         self.show_frame("ConfigSetter")
@@ -117,12 +117,19 @@ class ConfigApp(tkinter.Tk):
         self.last_frame = page_name
 
     def show_config(self):
-        self.view_config_text.set('Go Back')
+        self.update_frames(ConfigViewer)
+        self.view_config_text.set("Go Back")
         self.show_frame("ConfigViewer")
-        
+
     def show_config_setter(self):
-        self.view_config_text.set('View Config')
+        self.view_config_text.set("View Config")
         self.show_frame("ConfigSetter")
+
+    def update_frames(self, class_):
+        page_name = class_.__name__
+        frame = class_(self.container)
+        self.frames[page_name] = frame
+
 
 class AlternatingButton(ttk.Button):
     """Button that alternates between commands.
