@@ -1,5 +1,7 @@
+import sys, pathlib
+sys.path.append(str(pathlib.Path(__file__).parent.parent))
 from unittest import TestCase, main
-from utils import *
+from ebook_search import *
 
 
 class UtilsTestCase(TestCase):

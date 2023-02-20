@@ -1,7 +1,8 @@
+import requests, shutil, os, pyperclip, tkinter, subprocess, time, tempfile, sys, pathlib
+sys.path.append(str(pathlib.Path(__file__).parent.parent))
 from unittest import TestCase, main
 from image_extractor import *
 from utils import *
-import requests, shutil, os, pyperclip, tkinter, subprocess, time, tempfile
 
 class ImageExtractorTestCase(TestCase):
     def setUp(self):

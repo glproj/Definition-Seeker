@@ -1,3 +1,5 @@
+import sys, pathlib
+sys.path.append(str(pathlib.Path(__file__).parent.parent))
 from unittest import TestCase, main
 from word_info_extractor import *
 
