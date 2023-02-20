@@ -84,17 +84,21 @@ class ConfigApp(tkinter.Tk):
         bottom_buttons_frame = ttk.Frame(container)
         end_button = ttk.Button(bottom_buttons_frame, text="Finish")
         set_config_button = ttk.Button(bottom_buttons_frame, text="Set Config")
-        view_config_button = ttk.Button(bottom_buttons_frame, text="View Config")
+        self.view_config_text = tkinter.StringVar(container, "View Config")
+        view_config_button = AlternatingButton(
+            bottom_buttons_frame,
+            textvariable=self.view_config_text,
+            command=(self.show_config, self.show_config_setter),
+        )
         end_button.pack(side="right")
         set_config_button.pack(side="right")
         view_config_button.pack(side="right")
 
         self.frames = {}
-        for F in (ConfigSetter,):
+        for F in (ConfigSetter, ConfigViewer):
             page_name = F.__name__
             frame = F(container)
             self.frames[page_name] = frame
-            frame.grid(column=0, row=0)
 
         bottom_buttons_frame.grid(column=0, row=1, sticky="E")
         self.show_frame("ConfigSetter")
@@ -105,6 +109,9 @@ class ConfigApp(tkinter.Tk):
             self.frames[self.last_frame].grid_forget()
         self.frames[page_name].grid(column=0, row=0)
         self.last_frame = page_name
+
+    show_config = lambda self: self.show_frame("ConfigViewer")
+    show_config_setter = lambda self: self.show_frame("ConfigSetter")
 
 class AlternatingButton(ttk.Button):
     """Button that alternates between commands.
