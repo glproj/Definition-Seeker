@@ -57,7 +57,9 @@ class ConfigSetter(ttk.Frame):
             if lang == self.last_language:
                 CONFIG_PARSER[lang_code]["ebook_paths"] = str(paths_list)
 
-
+    def finish(self):
+        with open(CONFIG_PATH, 'w') as config:
+            CONFIG_PARSER.write(config)
 
 
 class ConfigViewer(ttk.Frame):
@@ -90,7 +92,11 @@ class ConfigApp(tkinter.Tk):
             self.update_frames(F)
 
         bottom_buttons_frame = ttk.Frame(self.container)
-        end_button = ttk.Button(bottom_buttons_frame, text="Finish")
+        end_button = ttk.Button(
+            bottom_buttons_frame,
+            text="Finish",
+            command=self.frames["ConfigSetter"].finish,
+        )
         set_config_button = ttk.Button(
             bottom_buttons_frame,
             text="Set Config",
