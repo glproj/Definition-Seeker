@@ -6,6 +6,8 @@ CONFIG_PATH = os.path.dirname(os.path.realpath(__file__)) + "/.configfile.ini"
 CONFIG_PARSER = configparser.ConfigParser()
 CONFIG_PARSER.read(CONFIG_PATH)
 VALID_LANGUAGE_CODES = ["en", "de"]
+VALID_LANGUAGES = {"en": "English", "de": "Deutsch"}
+SUPPORTED_EXTENSIONS = ["epub"]
 TRENNBARE_PRÄFIXE = [
     "auseinander",
     "gegenüber",
