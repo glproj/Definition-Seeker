@@ -12,6 +12,8 @@ class ConfigSetter(ttk.Frame):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.last_language = ""
+
         explanation_text = f"""Set the path of your favorite ebooks.
         Later you'll be able to use them to fetch examples.
         Supported extensions: {" ".join(SUPPORTED_EXTENSIONS)}"""
