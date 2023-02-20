@@ -4,7 +4,7 @@ from unittest import TestCase, main
 from ebook_search import *
 
 
-class UtilsTestCase(TestCase):
+class EbookSearchTestCase(TestCase):
     def test_get_examples(self):
         text = """Da ich mit der Geschwulst am Halse sehr geplagt war, indem Arzt und Chirurgus diese Exkreszenz erst vertreiben, hernach, wie sie sagten, zeitigen wollten, und sie zuletzt aufzuschneiden für gut befanden; so hatte ich eine geraume Zeit mehr an Unbequemlichkeit als an Schmerzen zu leiden, obgleich gegen das Ende der Heilung das immer fortdauernde Betupfen mit Höllenstein und andern ätzenden Dingen höchst verdrießliche Aussichten auf jeden neuen Tag geben mußte.
 
