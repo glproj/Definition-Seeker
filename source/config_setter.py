@@ -39,8 +39,16 @@ class ConfigSetter(ttk.Frame):
 
 
 class ConfigViewer(ttk.Frame):
-    def __init__(self):
-        pass
+    """View CONFIG_PARSER contents"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        pretty_config = ""
+        for part, section in CONFIG_PARSER.items():
+            pretty_config += f"{part}:\n"
+            for key, value in section.items():
+                pretty_config += f"  {key}: {value}\n"
+        settings = ttk.Label(self, text=pretty_config, wraplength=400)
+        settings.pack()
 
 
 class SimpleApp(tkinter.Tk):
@@ -51,9 +59,6 @@ class SimpleApp(tkinter.Tk):
             family="Helvetica", size=18, weight="bold", slant="italic"
         )
 
-        # the container is where we'll stack a bunch of frames
-        # on top of each other, then the one we want visible
-        # will be raised above the others
         container = tkinter.Frame(self)
         container.pack(side="top", fill="both", expand=True)
         container.grid_rowconfigure(0, weight=1)
