@@ -95,8 +95,11 @@ class ConfigApp(tkinter.Tk):
 
     def show_frame(self, page_name):
         """Show a frame for the given page name"""
-        frame = self.frames[page_name]
-        frame.tkraise()
+        if last_frame := vars(self).get("last_frame"):
+            self.frames[self.last_frame].grid_forget()
+        self.frames[page_name].grid(column=0, row=0)
+        self.last_frame = page_name
+
 class AlternatingButton(ttk.Button):
     """Button that alternates between commands.
     For example, if you pass (func1, func2) to command, the first
