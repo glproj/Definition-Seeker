@@ -64,12 +64,13 @@ class ConfigViewer(ttk.Frame):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        font = tkinter.font.Font(family="Noto Sans UI", size=10, weight="bold")
         pretty_config = ""
         for part, section in CONFIG_PARSER.items():
             pretty_config += f"{part}:\n"
             for key, value in section.items():
                 pretty_config += f"  {key}: {value}\n"
-        settings = ttk.Label(self, text=pretty_config, wraplength=400)
+        settings = ttk.Label(self, text=pretty_config, wraplength=500, font=font)
         settings.pack()
 
 
@@ -144,5 +145,5 @@ class AlternatingButton(ttk.Button):
 
 
 root = ConfigApp()
-root.geometry('400x400')
+root.geometry("500x500")
 root.mainloop()
