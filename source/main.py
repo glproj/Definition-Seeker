@@ -4,6 +4,7 @@ from image_extractor import *
 from ebook_search import *
 import programs
 from pathlib import Path
+from config_setter import ConfigApp, setup_initial_config_file
 
 histfile = os.path.join(os.path.expanduser("~"), ".wiktionary_history")
 try:
@@ -36,7 +37,6 @@ signal.signal(signal.SIGINT, save_when_ctrl_c)
 atexit.register(save, h_len, histfile)
 atexit.register(remove_q)
 # --- exit handlers --
-
 arg_parser = argparse.ArgumentParser()
 arg_parser.add_argument("-w", "--word", help="The word you are trying to search")
 arg_parser.add_argument(
@@ -46,10 +46,27 @@ arg_parser.add_argument(
     default="wiktionary",
     help="The source you are going to search from. Valid values: wiktionary (default), dwds, duden",
 )
+arg_parser.add_argument("-c", "--config", action="store_true")
 args = arg_parser.parse_args()
 str_valid_lc = ", ".join(VALID_LANGUAGE_CODES)
+if not CONFIG_PARSER.get("DEFAULT", "language", fallback=False) or vars(args).get("config"):
+    if not vars(args).get("config"):
+        setup_initial_config_file()
+        print(
+            """Setup your configuration file. If you get anything wrong, you can
+change your settings later with the --config option"""
+        )
+        print()
+    config_app = ConfigApp()
+    config_app.geometry('500x500')
+    config_app.mainloop()
+    CONFIG_PARSER["DEFAULT"]['google_search_api_key'] = input("Google Search Api Key (press 'enter' if you don't have one): ")
+    CONFIG_PARSER["DEFAULT"]['cx'] = input("Google Search Engine ID (press 'enter' if you don't have one): ")
+    with open(CONFIG_PATH, 'w') as config:
+        CONFIG_PARSER.write(config)
+
 print(
-    "Current language: " + CONFIG_PARSER["DEFAULT"]["Language"],
+    "Current language: " + CONFIG_PARSER["DEFAULT"]["language"],
     "q=quit",
     "dwds=dwds' definition for the previous word",
     "duden=duden's definition for the previous word",
@@ -62,7 +79,7 @@ print(
 print("-" * 72)
 setup_ebooks()
 while True:
-    language = CONFIG_PARSER["DEFAULT"]["Language"]
+    language = CONFIG_PARSER["DEFAULT"]["language"]
     if language == "en":
         programs.ENProgram(args=vars(args))
         if vars(args).get("word"):
