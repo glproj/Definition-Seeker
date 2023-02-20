@@ -110,8 +110,13 @@ class ConfigApp(tkinter.Tk):
         self.frames[page_name].grid(column=0, row=0)
         self.last_frame = page_name
 
-    show_config = lambda self: self.show_frame("ConfigViewer")
-    show_config_setter = lambda self: self.show_frame("ConfigSetter")
+    def show_config(self):
+        self.view_config_text.set('Go Back')
+        self.show_frame("ConfigViewer")
+        
+    def show_config_setter(self):
+        self.view_config_text.set('View Config')
+        self.show_frame("ConfigSetter")
 
 class AlternatingButton(ttk.Button):
     """Button that alternates between commands.
