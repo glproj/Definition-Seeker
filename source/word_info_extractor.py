@@ -239,7 +239,14 @@ class DudenWord(Word):
             ugly_info = page.find_all("li", id=re.compile("Bedeutung-"))
             for bedeutung in ugly_info:
                 bedeutung_index = bedeutung["id"].split("-")[1]
-                definition = f"[{bedeutung_index}] {bedeutung.div.text.strip()}"
+                try:
+                    definition = f"[{bedeutung_index}] {bedeutung.div.text.strip()}"
+                except:
+                    #some Duden definitions are just a figure, without any text
+                    if figure := bedeutung.figure:
+                        definition = f"[{bedeutung_index}] {figure.a['href']}"
+                    else:
+                        definition = ''
                 definitions.append(definition)
                 setup_examples(bedeutung, bedeutung_index)
         info = self.format_info(definitions, examples, show_phonetic_info=True)
