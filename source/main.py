@@ -90,3 +90,5 @@ while True:
         if vars(args).get("word"):
             break
         continue
+
+#Soli Deo Gloria

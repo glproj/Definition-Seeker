@@ -1,7 +1,7 @@
-import os, pathlib, re, termcolor, ebooklib, bs4, ast
+import os, pathlib, re, termcolor, ebooklib, bs4, ast, fitz, logging
 from pathlib import Path
 from ipdb import set_trace as s
-from programs import VALID_LANGUAGE_CODES
+from utils import VALID_LANGUAGE_CODES
 from utils import *
 
 EBOOK_DIR = Path(__file__).parent / "ebooks"
@@ -12,13 +12,23 @@ def setup_ebooks():
             ebook_paths = ast.literal_eval(ebook_paths)
             for ebook_path in ebook_paths:
                 ebook_name = os.path.splitext(os.path.basename(ebook_path))[0]
-                bs_ebook_path = (
+                ebook_txt_path = (
                     pathlib.Path(__file__).parent / f"ebooks/{language}/{ebook_name}.txt"
                 )
-                if not bs_ebook_path.exists():
-                    print(f"Setting up {ebook_name}...")
-                    bs_ebook_path.parent.mkdir(exist_ok=True, parents=True)
-                    bs_ebook_path.write_text(str(epub_to_bs(str(ebook_path)).text))
+                if ebook_txt_path.exists():
+                    continue
+                elif ebook_path.endswith('epub'):
+                    ebook_txt = str(epub_to_bs(str(ebook_path)).text)
+                elif ebook_path.endswith('pdf'):
+                    with open(ebook_path, "rb") as pdf:
+                        viewer = fitz.open(pdf)
+                        common_stuff = set()
+                        previous_page_text = ""
+                        pages = remove_common(*[page.get_text() for page in viewer])
+                        ebook_txt = "\n".join(pages)
+                print(f"Setting up {ebook_name}...")
+                ebook_txt_path.parent.mkdir(exist_ok=True, parents=True)
+                ebook_txt_path.write_text(ebook_txt)
     except KeyError as e:
         pass
 

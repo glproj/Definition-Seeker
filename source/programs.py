@@ -1,7 +1,7 @@
 import termcolor, ebook_search, pyperclip, sys
 from word_info_extractor import *
 from utils import VALID_LANGUAGE_CODES
-
+from image_extractor import IMAGE_EXTRACTION
 
 class Program:
     def __init__(self, word_class, args={}, language=""):
@@ -87,9 +87,10 @@ class Program:
             inflections = tuple([word])
         else:
             inflections = self.previous_word.get_inflections()
-        for book_txt in self.ebook_list:
+        for book_name, book_txt in self.ebook_name_txt.items():
             examples = ebook_search.get_examples(inflections, book_txt)
             for example in examples:
+                print(termcolor.colored(book_name.upper(), 'blue'))
                 print(example + "\n")
 
     def _get(self, attr: str, default):
@@ -101,10 +102,11 @@ class Program:
     def ebooks_txt(self, language: str):
         directory = ebook_search.EBOOK_DIR / language
         paths = absolute_file_paths(directory)
-        self.ebook_list = []
+        self.ebook_name_txt = dict()
         for path in paths:
             with open(path) as ebook_txt:
-                self.ebook_list.append(ebook_txt.read())
+                ebook_name = os.path.splitext(os.path.basename(path))[0]
+                self.ebook_name_txt[ebook_name] = ebook_txt.read()
 
 
 class DEProgram(Program):
