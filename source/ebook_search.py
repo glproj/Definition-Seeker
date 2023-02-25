@@ -106,7 +106,7 @@ def get_examples(words, book_txt):
                 rf"^[^.?!]*?\b({stem})\b[\w\s]*?({preffix})[.!?]",
             ]
             compiled_patterns = [
-                re.compile(pattern, flags=re.MULTILINE) for pattern in patterns
+                re.compile(pattern, flags=re.IGNORECASE | re.MULTILINE ) for pattern in patterns
             ]
             bs4_examples = [
                 findall_with_red_groups(pattern, book_txt)
@@ -119,7 +119,7 @@ def get_examples(words, book_txt):
         else:
             pattern = rf"^[^.?!]*?\b({stem})\b[^.]*?[.?!]"
             bs4_examples = findall_with_red_groups(
-                pattern, book_txt, flags=re.MULTILINE
+                pattern, book_txt, flags=re.MULTILINE | re.IGNORECASE
             )
         for example in bs4_examples:
             if preffix:
