@@ -1,6 +1,7 @@
 import glob, os, re, bs4, pathlib, termcolor, ipdb, requests
 from ebooklib import epub
 import configparser
+from collections import Counter
 
 CONFIG_PATH = os.path.dirname(os.path.realpath(__file__)) + "/.configfile.ini"
 CONFIG_PARSER = configparser.ConfigParser()
@@ -72,6 +73,93 @@ class NeverSayNeverSession(requests.Session):
         except requests.exceptions.Timeout:
             print("Request timed out. Trying again...")
             return self.get(url, **kwargs)
+
+
+class SetRecordsUpdates(set):
+    """set but it keeps track of updates.
+    >>> record = SetRecordsUpdates()
+    >>> record.update(['Gloria'])
+    >>> record.update(['Gloria'])
+    >>> record.update(['excelsis'])
+    >>> record.updates
+    3
+    >>> record.update_counter
+    collections.Counter({'Gloria': 2, 'excelsis': 1})"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.update_counter = Counter()
+        self.updates = 0
+
+    def update(self, *args, **kwargs):
+        self.update_counter.update(args[0])
+        super().update(*args, **kwargs)
+        self.updates += 1
+
+    def get_updates(self, element):
+        return self.update_counter.get(element, None)
+
+
+def in_common(*args) -> dict:
+    """Returns dictionary in the form
+    {common_text: (start_index, end_index)}
+
+    >>> in_common(
+    ...     'qui tollis peccata mundi, miserere nobis;',
+    ...     'qui tollis peccata mundi, suscipe deprecationem nostram.'
+    ... )
+    {'qui tollis peccata mundi, ': (0, 26), 's': (28, 29)}
+
+    Returns:
+        dict: {common_text: (start_index, end_index)}
+    """
+    common_sections = dict()
+    common_text = ""
+    for index, (characters) in enumerate(zip(*args)):
+        if len(set(characters)) == 1:
+            common_text += characters[0]
+            # if start_index doesn't exist, then we are
+            # necessarily in a new common section, since
+            # we going to delete start_index at the end
+            # of this common section.
+            try:
+                start_index
+            except NameError:
+                start_index = index
+        else:
+            try:
+                end_index = index
+                common_sections[common_text] = (start_index, end_index)
+                common_text = ""
+                del start_index
+            except NameError:
+                continue
+    return common_sections
+
+
+def remove_common(*args) -> list:
+    """Return a list without any common character sequences
+    between its elements.
+    >>> remove_common(
+    ...     "Herr, eingeborener Sohn, Jesus Christus.",
+    ...     "Herr und Gott, Lamm Gottes,"
+    ... )
+    [", eingeborener Sohn, Jesus Christus.", " und Gott, Lamm Gottes,"]
+
+    Returns:
+        list: list without common character sequences between its elements
+    """
+    commons = in_common(*args)
+    result = []
+    for text in args:
+        text_without_common_part = text
+        for span in commons.values():
+            text_without_common_part = (
+                text_without_common_part[: span[0]]
+                + text_without_common_part[span[1] :]
+            )
+        result.append(text_without_common_part)
+    return result
 
 
 def absolute_file_paths(directory):
