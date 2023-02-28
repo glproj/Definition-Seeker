@@ -507,7 +507,7 @@ TEMPORARY_DIR_PATH = pathlib.Path(TEMPORARY_DIR.name)
 class ENDictionaryWord(Word):
     def __init__(self, word):
         super().__init__(word, DICTIONARY_URL)
-
+    
     def _get_pronunciation(self, page: bs4.BeautifulSoup):
         pronunciation_tag = page.find(class_=re.compile("pron-ipa-content"))
         ipa = pronunciation_tag.text.strip("/")
@@ -519,12 +519,16 @@ class ENDictionaryWord(Word):
 
     def _get_info(self, page: bs4.BeautifulSoup) -> iter:
         definitions = page.find_all(class_="css-10n3ydx e1hk9ate0")
+            
         definitions_text = f"{self.word}"
         for definition_tag in definitions:
+            iter_definitions = definition_tag.contents
+            if 'expandable' in definition_tag.div['class']:
+                iter_definitions = definition_tag.find_all(value=re.compile(r'\d'))
             grammatical_section = definition_tag.previous_sibling
             definitions_text += f"\n{grammatical_section.text}\n"
-            for definition in definition_tag.children:
-                definitions_text += definition.text + "\n"
+            for definition in iter_definitions:
+                definitions_text += f"{definition.text}\n"
         examples = page.find(class_="css-qr8q5p e15kc6du4").children
         examples_text = ""
         for example in examples:
