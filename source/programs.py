@@ -13,10 +13,12 @@ class Program:
             return
         elif not vars(self).get("previous_word"):
             self.previous_word = ""
+        print('\033[31m', end='')
         input_ = (
             args.get("word", False)
-            or str(input(termcolor.colored("Word: ", "red"))).strip()
+            or str(input("Word: ")).strip()
         )
+        print('\033[0m', end='')
         input_list = input_.split(" ")
         input_list_wo_modifiers = word_str, *arguments = [
             x for x in input_list if not x.startswith("--")
