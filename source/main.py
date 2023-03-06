@@ -81,14 +81,10 @@ setup_ebooks()
 while True:
     language = CONFIG_PARSER["DEFAULT"]["language"]
     if language == "en":
-        programs.ENProgram(args=vars(args))
-        if vars(args).get("word"):
-            break
+        programs.ENProgram().cmdloop()
         continue
     elif language == "de":
-        programs.DEProgram(args=vars(args))
-        if vars(args).get("word"):
-            break
+        programs.DEProgram().cmdloop()
         continue
 
 #Soli Deo Gloria
