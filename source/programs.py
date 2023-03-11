@@ -23,11 +23,12 @@ class Program(cmd.Cmd):
         for lang, sources in self.all_sources.items():
             if cmd in sources and lang != self.lang:
                 print(
-                    f"Change you language to {VALID_LANGUAGES[lang].lower()} before using this command.",
-                    f"Your current language is {self.lang}."
+                    f"Change you language to {VALID_LANGUAGES[lang]} before using this command.",
+                    f"Your current language is {self.lang}.",
                 )
-                return 'DO_NOTHING'
+                return "DO_NOTHING"
         return line
+
     def onecmd(self, line):
         """Interpret the argument as though it had been typed in response
         to the prompt.
@@ -44,15 +45,15 @@ class Program(cmd.Cmd):
         if cmd is None:
             return self.default(line)
         self.lastcmd = line
-        if line == 'EOF' :
-            self.lastcmd = ''
-        if line == 'DO_NOTHING':
+        if line == "EOF":
+            self.lastcmd = ""
+        if line == "DO_NOTHING":
             return
-        if cmd == '':
+        if cmd == "":
             return self.default(line)
         else:
             try:
-                func = getattr(self, 'do_' + cmd)
+                func = getattr(self, "do_" + cmd)
             except AttributeError:
                 return self.default(line)
             return func(arg)
