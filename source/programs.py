@@ -199,19 +199,3 @@ class Program(cmd.Cmd):
             with open(path) as ebook_txt:
                 ebook_name = os.path.splitext(os.path.basename(path))[0]
                 self.ebook_name_txt[ebook_name] = ebook_txt.read()
-
-
-class DEProgram(Program):
-    word_class = DEWiktionaryWord
-
-    def dwds(self, word=""):
-        dwds_word = DWDSWord(word or self.previous_word.root)
-        print(dwds_word.root_info)
-
-    def duden(self, word=""):
-        duden_word = DudenWord(word or self.previous_word.root)
-        print(duden_word.root_info)
-
-
-class ENProgram(Program):
-    word_class = ENDictionaryWord
