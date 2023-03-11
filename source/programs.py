@@ -128,6 +128,7 @@ class Program(cmd.Cmd):
             self.previous_word = word
         except WordNotAvailable as e:
             print(e)
+            return
         if not word.root == word.word:
             print(f"Redirecting to {word.root}\n")
         print(f"IPA: {word.ipa}\n")
