@@ -57,21 +57,22 @@ class Word(CompatibilityMixin):
         self.ipa = ipa representation from word.
         self.root_ipa = ipa representation from root_word.
     """
-
-    def __init__(self, word, base_url, go_to_root=False, api=False):
-        self.go_to_root = go_to_root
+    base_url=None
+    api=False
+    go_to_root=False
+    def __init__(self, word):
         self.word = self.compatible(word) or word
-        url = base_url + self.word
+        url = self.base_url + self.word
         request = SESSION.get(url, timeout=0.8)
         raise_word_not_available_404(request)
-        if not api:
+        if not self.api:
             self.page = bs4.BeautifulSoup(request.text, "html.parser")
             self.page = self._only_relevant_part(self.page)
         else:
             self.page = json.loads(request.text)
 
         self.ipa, self.pronunciation_url = self._get_pronunciation(self.page)
-        if go_to_root and self.is_inflection_without_own_definition(self.page):
+        if self.go_to_root and self.is_inflection_without_own_definition(self.page):
             self.root_page, self.root = self._root_page()
             self.root_ipa, self.root_pronunciation_url = self._get_pronunciation(
                 self.root_page
@@ -175,10 +176,10 @@ class SecondaryWord(CompatibilityMixin):
         self.page = parsed page from base_url + word.
         self.info = where all the relevant info is contained.
     """
-
+    base_url=None
     def __init__(self, word, base_url):
         self.word = self.compatible(word) or word
-        url = base_url + self.word
+        url = self.base_url + self.word
         request = SESSION.get(url, timeout=0.8)
         raise_word_not_available_404(request)
         self.page = bs4.BeautifulSoup(request.text, "html.parser")
@@ -201,9 +202,7 @@ class SecondaryWord(CompatibilityMixin):
 
 # GERMAN
 class DudenWord(Word):
-    def __init__(self, word):
-        super().__init__(word, DUDEN_URL)
-
+    base_url = DUDEN_URL
     @classmethod
     def compatible(cls, word: str):
         return (
@@ -280,8 +279,9 @@ class DudenWord(Word):
 
 
 class DWDSWord(Word):
+    base_url = DWDS_URL
     def __init__(self, word):
-        super().__init__(word, DWDS_URL)
+        super().__init__(word)
         if not self.root_info.strip():
             raise_word_not_available("", netloc="www.dwds.de")
 
@@ -350,8 +350,8 @@ class DWDSWord(Word):
 
 
 class DEWiktionaryWord(Word):
-    def __init__(self, word):
-        super().__init__(word, WIKTIONARY_URL, go_to_root=True)
+    go_to_root=True
+    base_url=WIKTIONARY_URL
 
     def _root_page(self, page: bs4.BeautifulSoup = False):
         if not page:
@@ -505,8 +505,7 @@ TEMPORARY_DIR_PATH = pathlib.Path(TEMPORARY_DIR.name)
 
 
 class ENDictionaryWord(Word):
-    def __init__(self, word):
-        super().__init__(word, DICTIONARY_URL)
+    base_url=DICTIONARY_URL
     
     def _get_pronunciation(self, page: bs4.BeautifulSoup):
         pronunciation_tag = page.find(class_=re.compile("pron-ipa-content"))
