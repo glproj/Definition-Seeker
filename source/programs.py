@@ -140,7 +140,7 @@ class Program(cmd.Cmd):
     def get_previous_word(self):
         return vars(self).get("previous_word", "")
 
-    def do_q(self):
+    def do_q(self, arg):
         sys.exit(0)
 
     def do_lang(self, lang):
