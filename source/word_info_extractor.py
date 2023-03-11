@@ -119,7 +119,7 @@ class Word(CompatibilityMixin):
         Args:
             tuple(str, str): for example, (ˈhʊndɐt, https://upload.wikimedia.org/wikipedia/commons/c/c0/De-hundert.ogg)
         """
-        pass
+        return ('', '')
 
     def _root_page(self) -> bs4.BeautifulSoup:
         """Returns the root page of self.word and the root word.
