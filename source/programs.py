@@ -3,6 +3,7 @@ from word_info_extractor import *
 from utils import VALID_LANGUAGE_CODES
 from image_extractor import IMAGE_EXTRACTION
 
+WORD_PRIMARY_CLASSES = {'en': ENDictionaryWord, 'de': DEWiktionaryWord, 'br': BRDicioWord}
 
 class Program(cmd.Cmd):
     word_class = None
@@ -11,10 +12,8 @@ class Program(cmd.Cmd):
     en = []
     def __init__(self):
         super().__init__()
-        self.all_sources = {
-            lang: getattr(self, lang)
-            for lang in VALID_LANGUAGE_CODES
-        }
+        self.all_sources = {lang: getattr(self, lang) for lang in VALID_LANGUAGE_CODES}
+
     lang = CONFIG_PARSER["DEFAULT"]["Language"]
 
     def precmd(self, line):
@@ -99,6 +98,7 @@ class Program(cmd.Cmd):
             return
         CONFIG_PARSER["DEFAULT"]["Language"] = lang
         self.lang = lang
+        self.word_class = WORD_PRIMARY_CLASSES[self.lang]
         with open(CONFIG_PATH, "w") as file:
             CONFIG_PARSER.write(file)
 
