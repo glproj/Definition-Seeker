@@ -78,13 +78,9 @@ print(
 )
 print("-" * 72)
 setup_ebooks()
-while True:
-    language = CONFIG_PARSER["DEFAULT"]["language"]
-    if language == "en":
-        programs.ENProgram().cmdloop()
-        continue
-    elif language == "de":
-        programs.DEProgram().cmdloop()
-        continue
-
+classes = {'br': BRDicioWord, 'en': ENDictionaryWord, 'de': DEWiktionaryWord}
+language = CONFIG_PARSER["DEFAULT"]["language"]
+program = programs.Program()
+program.word_class = classes[language]
+program.cmdloop()
 #Soli Deo Gloria
