@@ -29,13 +29,14 @@ def save(prev_h_len, histfile):
 
 def save_when_ctrl_c(signum, frame):
     save(h_len, histfile)
-    print()
+    print('\033[0m', end='')
     sys.exit()
 
 
 signal.signal(signal.SIGINT, save_when_ctrl_c)
 atexit.register(save, h_len, histfile)
 atexit.register(remove_q)
+atexit.register(print, '\033[0m')
 # --- exit handlers --
 arg_parser = argparse.ArgumentParser()
 arg_parser.add_argument("-w", "--word", help="The word you are trying to search")
