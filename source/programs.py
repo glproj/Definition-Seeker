@@ -21,7 +21,7 @@ class Program(cmd.Cmd):
         list_of_sources = [source for s in self.all_sources.values() for source in s]
         for lang, sources in self.all_sources.items():
             if cmd in sources and lang != self.lang:
-                print(
+                print, file = self.stdout(
                     f"Change you language to {VALID_LANGUAGES[lang]} before using this command.",
                     f"Your current language is {self.lang}.",
                 )
@@ -86,15 +86,15 @@ class Program(cmd.Cmd):
                 else:
                     if self.use_rawinput:
                         try:
-                            print("\033[31m", end="")
+                            print("\033[31m", end="", file=self.stdout)
                             line = input(self.prompt)
-                            print("\033[0m", end="")
+                            print("\033[0m", end="", file=self.stdout)
                         except EOFError:
                             line = "EOF"
                     else:
                         self.stdout.write(self.prompt)
                         self.stdout.flush()
-                        line = self.stdin.readline()
+                        line = self.stdin.getvalue()
                         if not len(line):
                             line = "EOF"
                         else:
@@ -127,15 +127,15 @@ class Program(cmd.Cmd):
             word = self.word_class(term)
             self.previous_word = word
         except WordNotAvailable as e:
-            print(e)
+            print(e, file=self.stdout)
             return
         if not word.root == word.word:
-            print(f"Redirecting to {word.root}\n")
-        print(f"IPA: {word.ipa}\n")
+            print(f"Redirecting to {word.root}\n", file=self.stdout)
+        print(f"IPA: {word.ipa}\n", file=self.stdout)
         if word.go_to_root:
-            print(f"root IPA: {word.root_ipa}\n")
+            print(f"root IPA: {word.root_ipa}\n", file=self.stdout)
         pyperclip.copy(f"{word.root_ipa} {word.root_pronunciation_url}")
-        print(word.root_info)
+        print(word.root_info, file=self.stdout)
 
     def get_previous_word(self):
         return vars(self).get("previous_word", "")
@@ -150,7 +150,10 @@ class Program(cmd.Cmd):
             lang (str, optional): language code. Defaults to ''.
         """
         if (lang not in VALID_LANGUAGE_CODES) or not lang.strip():
-            print(f"The language code should be one of the following: {str_valid_lc}")
+            print(
+                f"The language code should be one of the following: {str_valid_lc}",
+                file=self.stdout,
+            )
             return
         CONFIG_PARSER["DEFAULT"]["Language"] = lang
         self.lang = lang
@@ -179,11 +182,11 @@ class Program(cmd.Cmd):
 
     def do_dwds(self, word):
         dwds_word = DWDSWord(word or self.previous_word.root)
-        print(dwds_word.root_info)
+        print(dwds_word.root_info, file=self.stdout)
 
     def do_duden(self, word):
         duden_word = DudenWord(word or self.previous_word.root)
-        print(duden_word.root_info)
+        print(duden_word.root_info, file=self.stdout)
 
     def _get(self, attr: str, default):
         try:
