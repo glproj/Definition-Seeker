@@ -222,3 +222,8 @@ class Program(cmd.Cmd):
                     )
 
 
+class TestProgram(Program):
+    use_rawinput = 0
+
+    def postcmd(self, stop, line):
+        return True
