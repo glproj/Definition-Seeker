@@ -167,17 +167,44 @@ def remove_common(*args) -> list:
     return result
 
 
-def absolute_file_paths(directory):
+def absolute_file_paths(directory: str) -> list:
+    """Returns the absolute path of every file inside directory
+
+    Args:
+        directory (str): directory path
+
+    Returns:
+        list: list with the absolute path of every file inside directory
+    """
     return glob.glob(os.path.join(directory, "**"))
 
 
-def lowercase_extension(image_path: str):
+def lowercase_extension(image_path: str)->str:
+    """Returns image_path but with a lowercase extension
+    For example, the path "/dir/GregoryI.JPG" will be turned
+    into "/dir/GregoryI.jpg"
+
+    Args:
+        image_path (str): image path
+
+    Returns:
+        str: new image path
+    """
     extension = re.search("\.(\w+)", image_path).groups()[0]
     new_image_path = os.path.splitext(image_path)[0] + f".{extension.lower()}"
     return new_image_path
 
 
 def remove_navigable_strings(bs4_list: list):
+    """Remove every instance of bs4.NavigableString out of list
+    of bs4 tags.
+
+    Args:
+        bs4_list (list): list with tags
+
+    Returns:
+        list: list without any bs4.NavigableString instances
+    """
     result = []
     for item in bs4_list:
         if str(item.__class__) == "<class 'bs4.element.NavigableString'>":
