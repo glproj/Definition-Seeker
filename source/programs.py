@@ -169,16 +169,25 @@ class Program(cmd.Cmd):
             print("Your configuration file doesn't have GOOGLE_API")
 
     def do_examples(self, arg):
-        word = " ".join(arg) or self.previous_word
-        if args:
+        """prints examples on the screen"""
+        word = arg or self.previous_word
+        if arg:
             inflections = tuple([word])
         else:
             inflections = self.previous_word.get_inflections()
-        for book_name, book_txt in self.ebook_name_txt.items():
-            examples = ebook_search.get_examples(inflections, book_txt)
-            for example in examples:
-                print(termcolor.colored(book_name.upper(), "blue"))
-                print(example + "\n")
+        for lang, book_list in self.ebook_lang_name_txt.items():
+            if lang != self.lang:
+                continue
+            book_list = [
+                (name, txt)
+                for book_name_txt in book_list
+                for name, txt in book_name_txt.items()
+            ]
+            for book_name, book_txt in book_list:
+                examples = ebook_search.get_examples(inflections, book_txt)
+                for example in examples:
+                    print(termcolor.colored(book_name.upper(), "blue"), file=self.stdout)
+                    print(example + "\n", file=self.stdout)
 
     def do_dwds(self, word):
         dwds_word = DWDSWord(word or self.previous_word.root)
@@ -194,11 +203,22 @@ class Program(cmd.Cmd):
         except AttributeError:
             return default
 
-    def ebooks_txt(self, language: str):
-        directory = ebook_search.EBOOK_DIR / language
-        paths = absolute_file_paths(directory)
-        self.ebook_name_txt = dict()
-        for path in paths:
-            with open(path) as ebook_txt:
-                ebook_name = os.path.splitext(os.path.basename(path))[0]
-                self.ebook_name_txt[ebook_name] = ebook_txt.read()
+    def preloop(self):
+        directory = ebook_search.EBOOK_DIR
+        dir_paths = absolute_file_paths(directory)
+        from collections import defaultdict
+
+        # {lang: [{name: txt}]}
+        self.ebook_lang_name_txt = defaultdict(list)
+        for dir_path in dir_paths:
+            dir_pathlib = pathlib.Path(dir_path)
+            file_paths = absolute_file_paths(dir_pathlib)
+            lang = dir_pathlib.name
+            for file_path in file_paths:
+                with open(file_path) as ebook_txt:
+                    ebook_name = os.path.splitext(os.path.basename(file_path))[0]
+                    self.ebook_lang_name_txt[lang].append(
+                        {ebook_name: ebook_txt.read()}
+                    )
+
+
