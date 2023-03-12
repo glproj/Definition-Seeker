@@ -154,11 +154,15 @@ def remove_common(*args) -> list:
     result = []
     for text in args:
         text_without_common_part = text
-        for span in commons.values():
+        decrease_in_len = 0
+        for start, end in commons.values():
+            actual_start = start - decrease_in_len
+            actual_end = end - decrease_in_len
             text_without_common_part = (
-                text_without_common_part[: span[0]]
-                + text_without_common_part[span[1] :]
+                text_without_common_part[:actual_start]
+                + text_without_common_part[actual_end:]
             )
+            decrease_in_len = end - start
         result.append(text_without_common_part)
     return result
 
