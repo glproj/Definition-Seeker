@@ -9,7 +9,7 @@ CONFIG_PARSER = configparser.ConfigParser()
 CONFIG_PARSER.read(CONFIG_PATH)
 VALID_LANGUAGES = {"en": "English", "de": "Deutsch", "br": "Português Brasileiro"}
 VALID_LANGUAGE_CODES = VALID_LANGUAGES.keys()
-SUPPORTED_EXTENSIONS = ["epub"]
+SUPPORTED_EXTENSIONS = ["epub", "pdf"]
 TRENNBARE_PRÄFIXE = [
     "auseinander",
     "gegenüber",
