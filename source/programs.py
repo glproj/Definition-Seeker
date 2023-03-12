@@ -1,19 +1,19 @@
-import termcolor, ebook_search, pyperclip, sys, cmd
+import termcolor, ebook_search, pyperclip, sys, cmd, typing
 from word_info_extractor import *
 from utils import VALID_LANGUAGE_CODES
 from image_extractor import IMAGE_EXTRACTION
 
-WORD_PRIMARY_CLASSES = {'en': ENDictionaryWord, 'de': DEWiktionaryWord, 'br': BRDicioWord}
+WORD_PRIMARY_CLASSES = {
+    "en": ENDictionaryWord,
+    "de": DEWiktionaryWord,
+    "br": BRDicioWord,
+}
+
 
 class Program(cmd.Cmd):
     word_class = None
     prompt = "Word: "
-    de = ["dwds", "duden"]
-    en = []
-    def __init__(self):
-        super().__init__()
-        self.all_sources = {lang: getattr(self, lang) for lang in VALID_LANGUAGE_CODES}
-
+    all_sources = {"de": ["dwds", "duden"], "br": [], "en": []}
     lang = CONFIG_PARSER["DEFAULT"]["Language"]
 
     def precmd(self, line):

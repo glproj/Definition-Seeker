@@ -535,3 +535,27 @@ class ENDictionaryWord(Word):
             examples_text += example_content.text + "\n"
         content = f"{definitions_text}\n\n{examples_text}"
         return content
+
+#Portuguese
+
+DICIO_URL="https://dicio-api-ten.vercel.app/v2/"
+
+class BRDicioWord(Word):
+    base_url=DICIO_URL
+    api=True
+    go_to_root=False
+
+    def _get_info(self, page):
+        result = ""
+        try:
+            if 'error' in page.keys():
+                netloc = urllib.parse.urlparse(DICIO_URL).netloc
+                raise WordNotAvailable(f'Word not available at {netloc}')
+        except AttributeError:
+            pass
+        for info in page:
+            result += info["partOfSpeech"].upper() + "\n"
+            for meaning in info["meanings"]:
+                result += meaning + "\n"
+            result += "\n"
+        return result

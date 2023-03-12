@@ -2,12 +2,13 @@ import glob, os, re, bs4, pathlib, termcolor, ipdb, requests
 from ebooklib import epub
 import configparser
 from collections import Counter
+from ipdb import set_trace as s
 
 CONFIG_PATH = os.path.dirname(os.path.realpath(__file__)) + "/.configfile.ini"
 CONFIG_PARSER = configparser.ConfigParser()
 CONFIG_PARSER.read(CONFIG_PATH)
-VALID_LANGUAGE_CODES = ["en", "de"]
-VALID_LANGUAGES = {"en": "English", "de": "Deutsch"}
+VALID_LANGUAGES = {"en": "English", "de": "Deutsch", "br": "Português Brasileiro"}
+VALID_LANGUAGE_CODES = VALID_LANGUAGES.keys()
 SUPPORTED_EXTENSIONS = ["epub"]
 TRENNBARE_PRÄFIXE = [
     "auseinander",

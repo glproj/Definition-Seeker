@@ -79,7 +79,7 @@ print(
 )
 print("-" * 72)
 setup_ebooks()
-classes = {'en': ENDictionaryWord, 'de': DEWiktionaryWord}
+classes = {'br': BRDicioWord,'en': ENDictionaryWord, 'de': DEWiktionaryWord}
 language = CONFIG_PARSER["DEFAULT"]["language"]
 program = programs.Program()
 program.word_class = classes[language]
