@@ -1,7 +1,7 @@
 import termcolor, ebook_search, pyperclip, sys, cmd, typing
 from word_info_extractor import *
 from utils import VALID_LANGUAGE_CODES
-from image_extractor import IMAGE_EXTRACTION
+from image_extractor import IMAGE_EXTRACTION, get_images_from_word
 
 WORD_PRIMARY_CLASSES = {
     "en": ENDictionaryWord,
@@ -163,10 +163,10 @@ class Program(cmd.Cmd):
 
     def do_images(self, arg):
         if IMAGE_EXTRACTION:
-            key_word = " ".join(arg) or self.previous_word
+            key_word = arg or self.previous_word
             get_images_from_word(key_word)
         else:
-            print("Your configuration file doesn't have GOOGLE_API")
+            print("Your configuration file doesn't have GOOGLE_API", file=self.stdout)
 
     def do_examples(self, arg):
         """prints examples on the screen"""
@@ -186,7 +186,9 @@ class Program(cmd.Cmd):
             for book_name, book_txt in book_list:
                 examples = ebook_search.get_examples(inflections, book_txt)
                 for example in examples:
-                    print(termcolor.colored(book_name.upper(), "blue"), file=self.stdout)
+                    print(
+                        termcolor.colored(book_name.upper(), "blue"), file=self.stdout
+                    )
                     print(example + "\n", file=self.stdout)
 
     def do_dwds(self, word):

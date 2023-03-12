@@ -57,9 +57,11 @@ class Word(CompatibilityMixin):
         self.ipa = ipa representation from word.
         self.root_ipa = ipa representation from root_word.
     """
-    base_url=None
-    api=False
-    go_to_root=False
+
+    base_url = None
+    api = False
+    go_to_root = False
+
     def __init__(self, word):
         self.word = self.compatible(word) or word
         url = self.base_url + self.word
@@ -119,7 +121,7 @@ class Word(CompatibilityMixin):
         Args:
             tuple(str, str): for example, (ˈhʊndɐt, https://upload.wikimedia.org/wikipedia/commons/c/c0/De-hundert.ogg)
         """
-        return ('', '')
+        return ("", "")
 
     def _root_page(self) -> bs4.BeautifulSoup:
         """Returns the root page of self.word and the root word.
@@ -176,7 +178,9 @@ class SecondaryWord(CompatibilityMixin):
         self.page = parsed page from base_url + word.
         self.info = where all the relevant info is contained.
     """
-    base_url=None
+
+    base_url = None
+
     def __init__(self, word, base_url):
         self.word = self.compatible(word) or word
         url = self.base_url + self.word
@@ -203,6 +207,7 @@ class SecondaryWord(CompatibilityMixin):
 # GERMAN
 class DudenWord(Word):
     base_url = DUDEN_URL
+
     @classmethod
     def compatible(cls, word: str):
         return (
@@ -218,9 +223,10 @@ class DudenWord(Word):
         word = page.find(class_="lemma__main").text
         definitions = []
         examples = []
+
         def setup_examples(bedeutung, index):
             example_title = bedeutung.find(
-                class_="note__title", text=re.compile("Beispiel")
+                class_="note__title", string=re.compile("Beispiel")
             )
             if example_title:
                 example_tag = example_title.parent
@@ -231,9 +237,9 @@ class DudenWord(Word):
             for example in example_iter:
                 examples.append(f"[{index}] {example.text.strip()}")
 
-        if ugly_info := page.find(id='bedeutung'):
-            definitions.append(f'[1] {ugly_info.p.text}')
-            setup_examples(ugly_info, '1')
+        if ugly_info := page.find(id="bedeutung"):
+            definitions.append(f"[1] {ugly_info.p.text}")
+            setup_examples(ugly_info, "1")
         else:
             ugly_info = page.find_all("li", id=re.compile("Bedeutung-"))
             for bedeutung in ugly_info:
@@ -241,11 +247,11 @@ class DudenWord(Word):
                 try:
                     definition = f"[{bedeutung_index}] {bedeutung.div.text.strip()}"
                 except:
-                    #some Duden definitions are just a figure, without any text
+                    # some Duden definitions are just a figure, without any text
                     if figure := bedeutung.figure:
                         definition = f"[{bedeutung_index}] {figure.a['href']}"
                     else:
-                        definition = ''
+                        definition = ""
                 definitions.append(definition)
                 setup_examples(bedeutung, bedeutung_index)
         info = self.format_info(definitions, examples, show_phonetic_info=True)
@@ -255,24 +261,24 @@ class DudenWord(Word):
         guide_tag = page.find(class_="pronunciation-guide")
         useful_info_tags = guide_tag.find_all("dd")
         useful_info_tags = [tag.div.children for tag in useful_info_tags]
-        phonetic_info= []
+        phonetic_info = []
         pronunciation_url = ""
         for tag_iter in useful_info_tags:
             for tag in tag_iter:
-                if 'NavigableString' in str(tag.__class__):
+                if "NavigableString" in str(tag.__class__):
                     continue
                 try:
-                    pronunciation_url = tag['href']
+                    pronunciation_url = tag["href"]
                 except (KeyError, TypeError):
-                    phon = ''
+                    phon = ""
                     if len(tag.contents) == 1:
-                        phon+=tag.contents[0].text
+                        phon += tag.contents[0].text
                     else:
                         for content in tag.contents:
                             if not content.name:
                                 phon += content.text
                             else:
-                                phon += f'\033[4m{content.text}\033[0m'
+                                phon += f"\033[4m{content.text}\033[0m"
                     phonetic_info.append(phon)
         phonetic_info = " ".join(phonetic_info)
         return (phonetic_info, pronunciation_url)
@@ -280,6 +286,7 @@ class DudenWord(Word):
 
 class DWDSWord(Word):
     base_url = DWDS_URL
+
     def __init__(self, word):
         super().__init__(word)
         if not self.root_info.strip():
@@ -341,7 +348,7 @@ class DWDSWord(Word):
             url = audio_tag.source["src"]
             ipa_tag = audio_tag.next_sibling.next_sibling
             try:
-                ipa = ipa_tag.text.strip('[').strip(']')
+                ipa = ipa_tag.text.strip("[").strip("]")
             except:
                 ipa = ""
             return (ipa, url)
@@ -350,8 +357,8 @@ class DWDSWord(Word):
 
 
 class DEWiktionaryWord(Word):
-    go_to_root=True
-    base_url=WIKTIONARY_URL
+    go_to_root = True
+    base_url = WIKTIONARY_URL
 
     def _root_page(self, page: bs4.BeautifulSoup = False):
         if not page:
@@ -505,8 +512,8 @@ TEMPORARY_DIR_PATH = pathlib.Path(TEMPORARY_DIR.name)
 
 
 class ENDictionaryWord(Word):
-    base_url=DICTIONARY_URL
-    
+    base_url = DICTIONARY_URL
+
     def _get_pronunciation(self, page: bs4.BeautifulSoup):
         pronunciation_tag = page.find(class_=re.compile("pron-ipa-content"))
         ipa = pronunciation_tag.text.strip("/")
@@ -518,12 +525,12 @@ class ENDictionaryWord(Word):
 
     def _get_info(self, page: bs4.BeautifulSoup) -> iter:
         definitions = page.find_all(class_="css-10n3ydx e1hk9ate0")
-            
+
         definitions_text = f"{self.word}"
         for definition_tag in definitions:
             iter_definitions = definition_tag.contents
-            if 'expandable' in definition_tag.div['class']:
-                iter_definitions = definition_tag.find_all(value=re.compile(r'\d'))
+            if "expandable" in definition_tag.div["class"]:
+                iter_definitions = definition_tag.find_all(value=re.compile(r"\d"))
             grammatical_section = definition_tag.previous_sibling
             definitions_text += f"\n{grammatical_section.text}\n"
             for definition in iter_definitions:
@@ -536,21 +543,23 @@ class ENDictionaryWord(Word):
         content = f"{definitions_text}\n\n{examples_text}"
         return content
 
-#Portuguese
 
-DICIO_URL="https://dicio-api-ten.vercel.app/v2/"
+# Portuguese
+
+DICIO_URL = "https://dicio-api-ten.vercel.app/v2/"
+
 
 class BRDicioWord(Word):
-    base_url=DICIO_URL
-    api=True
-    go_to_root=False
+    base_url = DICIO_URL
+    api = True
+    go_to_root = False
 
     def _get_info(self, page):
         result = ""
         try:
-            if 'error' in page.keys():
+            if "error" in page.keys():
                 netloc = urllib.parse.urlparse(DICIO_URL).netloc
-                raise WordNotAvailable(f'Word not available at {netloc}')
+                raise WordNotAvailable(f"Word not available at {netloc}")
         except AttributeError:
             pass
         for info in page:
