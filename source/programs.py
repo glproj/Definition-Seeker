@@ -155,7 +155,7 @@ class Program(cmd.Cmd):
         """
         if (lang not in VALID_LANGUAGE_CODES) or not lang.strip():
             print(
-                f"The language code should be one of the following: {str_valid_lc}",
+                f"The language code should be one of the following: {', '.join(VALID_LANGUAGE_CODES)}",
                 file=self.stdout,
             )
             return
@@ -170,7 +170,7 @@ class Program(cmd.Cmd):
             key_word = arg or self.previous_word
             get_images_from_word(key_word)
         else:
-            print("Your configuration file doesn't have GOOGLE_API", file=self.stdout)
+            print("Your configuration file doesn't have GOOGLE_API_KEY or CX", file=self.stdout)
 
     def do_examples(self, arg):
         """prints examples on the screen"""
