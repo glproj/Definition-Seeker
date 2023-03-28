@@ -46,6 +46,7 @@ class Program(cmd.Cmd):
         self.lastcmd = line
         if line == "EOF":
             self.lastcmd = ""
+            sys.exit()
         if line == "DO_NOTHING":
             return
         if cmd == "":
