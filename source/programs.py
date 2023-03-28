@@ -21,9 +21,9 @@ class Program(cmd.Cmd):
         list_of_sources = [source for s in self.all_sources.values() for source in s]
         for lang, sources in self.all_sources.items():
             if cmd in sources and lang != self.lang:
-                print, file = self.stdout(
+                print(
                     f"Change you language to {VALID_LANGUAGES[lang]} before using this command.",
-                    f"Your current language is {self.lang}.",
+                    f"Your current language is {self.lang}.", file=self.stdout
                 )
                 return "DO_NOTHING"
         return line
