@@ -56,7 +56,10 @@ class Program(cmd.Cmd):
                 func = getattr(self, "do_" + cmd)
             except AttributeError:
                 return self.default(line)
-            return func(arg)
+            try:
+                return func(arg)
+            except WordNotAvailable as e:
+                print(e)
 
     def cmdloop(self, intro=None):
         """Repeatedly issue a prompt, accept input, parse an initial prefix
