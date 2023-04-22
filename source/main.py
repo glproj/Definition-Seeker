@@ -1,10 +1,18 @@
-import keyboard_shortcuts, requests, bs4, pyperclip, os, ast, readline, atexit, signal, sys, getopt, argparse, configparser, termcolor
+import os, readline, atexit, signal, sys, argparse
 from word_info_extractor import *
 from image_extractor import *
 from ebook_search import *
-from pathlib import Path
 from config_setter import ConfigApp, setup_initial_config_file
+import logging
 
+logging.basicConfig(
+    filename="main.log",
+    encoding="utf-8",
+    level=logging.DEBUG,
+    filemode="w",
+    format="%(asctime)s %(message)s",
+    datefmt="%m/%d/%Y %I:%M:%S %p",
+)
 histfile = os.path.join(os.path.expanduser("~"), ".wiktionary_history")
 try:
     readline.read_history_file(histfile)

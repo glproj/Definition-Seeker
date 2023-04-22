@@ -1,3 +1,4 @@
+import logging
 from google_images_search import GoogleImagesSearch
 from utils import *
 import os, subprocess, re, pathlib, tempfile
@@ -23,10 +24,12 @@ def get_images_from_word(word: str, image_dir=IMAGE_DIR):
         "rights": "cc_publicdomain|cc_attribute|cc_sharealike|cc_noncommercial|cc_nonderived",
         "imgSize":"medium"
     }
+    logging.info(f"searching for images from '{word}'")
     gis.search(
         _search_params,
         path_to_dir=image_dir,
     )
+    logging.info(f"finished the search for images from '{word}'")
 
 def copy_image_then_delete(image_path: str):
     extension = re.search("\.(\w+)", image_path).groups()[0]

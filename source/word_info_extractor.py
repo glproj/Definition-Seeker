@@ -1,6 +1,5 @@
-import requests, bs4, os, re, textwrap, itertools, pathlib, urllib, json, gtts, tempfile
+import requests, bs4, re, pathlib, urllib, json, gtts, tempfile
 from utils import *
-from ipdb import set_trace as s
 from collections import Counter
 
 DWDS_URL = "https://www.dwds.de/wb/"
@@ -61,10 +60,11 @@ class Word(CompatibilityMixin):
     base_url = None
     api = False
     go_to_root = False
+    options = ''
 
     def __init__(self, word):
         self.word = self.compatible(word) or word
-        url = self.base_url + self.word
+        url = self.base_url + self.word + self.options
         request = SESSION.get(url, timeout=0.8)
         raise_word_not_available_404(request)
         if not self.api:
@@ -86,7 +86,8 @@ class Word(CompatibilityMixin):
                 self.pronunciation_url,
             )
         self.root_info = self._get_info(self.root_page)
-
+        if not self.root_info.strip():
+            raise_word_not_available(request, netloc="www.dwds.de")
     @classmethod
     def _only_relevant_part(cls, page: bs4.BeautifulSoup) -> bs4.BeautifulSoup:
         """Returns a page without information that could get in the way
@@ -102,7 +103,7 @@ class Word(CompatibilityMixin):
         return page
 
     @classmethod
-    def _get_info(cls, page: bs4.BeautifulSoup) -> iter:
+    def _get_info(cls, page: bs4.BeautifulSoup) -> str:
         """Returns an iterator with every section of information about
         the word
 
@@ -110,7 +111,7 @@ class Word(CompatibilityMixin):
             page (bs4.BeautifulSoup): word page
 
         Returns:
-            iter: iterator with every section of information about the word
+            str: string with information about the word
         """
         pass
 
@@ -287,13 +288,13 @@ class DudenWord(Word):
 class DWDSWord(Word):
     base_url = DWDS_URL
 
-    def __init__(self, word):
-        super().__init__(word)
-        if not self.root_info.strip():
-            raise_word_not_available("", netloc="www.dwds.de")
-
     def _get_info(self, page: bs4.BeautifulSoup):
-        word = page.find("h1", class_="dwdswb-ft-lemmaansatz").text
+        word = page.find("h1", class_="dwdswb-ft-lemmaansatz")
+        if word:
+            word = word.text
+        else:
+            # returning an empty string here raises an error later
+            return ""
         main_definitions = page.find_all(id=re.compile("d-\d-\d"))
         definitions = []
         examples = []
@@ -469,7 +470,7 @@ class DEWiktionaryWord(Word):
         for inflection_table in all_inflection_tables:
             g_info_current = inflection_table.previous_sibling.text
             if "Nachname" in g_info_current:
-                word = get_word(wiktionary_page)
+                word = self.root
                 result = result.union([word])
             elif "Verb" in g_info_current:
                 inflection_cells = inflection_table.find_all("td", colspan=3)
@@ -568,3 +569,22 @@ class BRDicioWord(Word):
                 result += meaning + "\n"
             result += "\n"
         return result
+
+# Latin
+
+LAWIKTIONARY_URL = "https://en.wiktionary.org/wiki/"
+class LAWiktionaryWord(Word):
+    base_url = LAWIKTIONARY_URL
+    api = False
+    go_to_root = False
+    options = "?action=raw"
+    def _get_info(self, page:bs4.BeautifulSoup):
+        return page.text
+    @classmethod
+    def _only_relevant_part(cls, page: bs4.BeautifulSoup):
+        text = page.text + "==Language==\n"
+        isolate_latin_pattern = re.compile(r'==Latin==(.+?)==[^=]+==\n', re.DOTALL)
+        isolated_latin: re.Match = re.search(isolate_latin_pattern, text)
+        result = isolated_latin.groups()[0]
+        return bs4.BeautifulSoup(result, 'html.parser')
+        

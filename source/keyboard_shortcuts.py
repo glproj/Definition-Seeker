@@ -1,4 +1,4 @@
-import atexit, os, tkinter, time, pyperclip
+import tkinter, logging
 from pynput import keyboard
 from image_extractor import *
 from utils import *
@@ -15,6 +15,7 @@ def on_press(key):
     if k == "pause":
         try:
             image_path = absolute_file_paths(IMAGE_DIR)[0]
+            logging.info(f"fetched {image_path}")
             copy_image_then_delete(image_path)
             KEY_SIMULATOR.press(keyboard.Key.ctrl)
             KEY_SIMULATOR.press("v")
