@@ -5,7 +5,7 @@ from ipdb import set_trace as s
 
 IMAGE_EXTRACTION = True
 try:
-    GOOGLE_SEARCH_API_KEY = CONFIG_PARSER['DEFAULT']["GOOGLE_IMAGE_API_KEY"]
+    GOOGLE_SEARCH_API_KEY = CONFIG_PARSER['DEFAULT']["GOOGLE_SEARCH_API_KEY"]
     CX = CONFIG_PARSER['DEFAULT']["CX"]
     gis = GoogleImagesSearch(GOOGLE_SEARCH_API_KEY, CX)
 except KeyError:
