@@ -84,10 +84,11 @@ print(
 )
 print("-" * 72)
 setup_ebooks()
-classes = {'br': BRDicioWord,'en': ENDictionaryWord, 'de': DEWiktionaryWord}
+
 language = CONFIG_PARSER["DEFAULT"]["language"]
 import programs
+
 program = programs.Program()
-program.word_class = classes[language]
+program.word_class = programs.WORD_PRIMARY_CLASSES[language]
 program.cmdloop()
-#Soli Deo Gloria
+# Soli Deo Gloria
