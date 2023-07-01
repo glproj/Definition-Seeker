@@ -516,8 +516,8 @@ class ENDictionaryWord(Word):
     base_url = DICTIONARY_URL
 
     def _get_pronunciation(self, page: bs4.BeautifulSoup):
-        pronunciation_tag = page.find(class_=re.compile("pron-ipa-content"))
-        ipa = pronunciation_tag.text.strip("/")
+        pronunciation_tag = page.find(class_=re.compile("LgvbRZvyfgILDYMd8Lq6"))
+        ipa = pronunciation_tag.text.strip("[").strip("]")
         path_to_pronunciation = str(TEMPORARY_DIR_PATH / f"{self.word}.wav")
         pronunciation = gtts.gTTS(self.word, tld="us")
         with open(path_to_pronunciation, "w+b") as file:
@@ -525,23 +525,24 @@ class ENDictionaryWord(Word):
         return (ipa, f"file://{path_to_pronunciation}")
 
     def _get_info(self, page: bs4.BeautifulSoup) -> iter:
-        definitions = page.find_all(class_="css-10n3ydx e1hk9ate0")
+        definition_blocks = page.find_all(attrs={"data-type": "word-definitions"})
 
-        definitions_text = f"{self.word}"
-        for definition_tag in definitions:
-            iter_definitions = definition_tag.contents
-            if "expandable" in definition_tag.div["class"]:
-                iter_definitions = definition_tag.find_all(value=re.compile(r"\d"))
-            grammatical_section = definition_tag.previous_sibling
-            definitions_text += f"\n{grammatical_section.text}\n"
-            for definition in iter_definitions:
-                definitions_text += f"{definition.text}\n"
-        examples = page.find(class_="css-qr8q5p e15kc6du4").children
+        definitions_text = f"{self.word}\n"
+        for block in definition_blocks:
+            try:
+                block_grammar = block.find(class_="OoNk445te7MEusWxZIjw").text
+            except AttributeError:
+                continue
+            definitions = block.find_all(class_="ESah86zaufmd2_YPdZtq")
+            definitions_text += "\n" + block_grammar + "\n"
+            for definition in definitions:
+                definitions_text += definition.text + "\n"
+
+        examples = page.find_all(class_="VvALg_9aE120lhieur0R")
         examples_text = ""
         for example in examples:
-            example_content, source = example.children
-            examples_text += example_content.text + "\n"
-        content = f"{definitions_text}\n\n{examples_text}"
+            examples_text += example.p.text + "\n"
+        content = f"{definitions_text}\n\nEXAMPLES\n{examples_text}"
         return content
 
 
