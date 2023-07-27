@@ -517,16 +517,21 @@ class ENDictionaryWord(Word):
 
     def _get_pronunciation(self, page: bs4.BeautifulSoup):
         pronunciation_tag = page.find(class_=re.compile("LgvbRZvyfgILDYMd8Lq6"))
-        ipa = pronunciation_tag.text.strip("[").strip("]")
+        ipa = ""
+        try:
+            ipa = pronunciation_tag.text.strip("[").strip("]")
+        except AttributeError:
+            pass
         path_to_pronunciation = str(TEMPORARY_DIR_PATH / f"{self.word}.wav")
         pronunciation = gtts.gTTS(self.word, tld="us")
         with open(path_to_pronunciation, "w+b") as file:
             pronunciation.write_to_fp(file)
         return (ipa, f"file://{path_to_pronunciation}")
 
-    def _get_info(self, page: bs4.BeautifulSoup) -> iter:
+    def _get_info(self, page: bs4.BeautifulSoup):
         definition_blocks = page.find_all(attrs={"data-type": "word-definitions"})
-
+        if not definition_blocks:
+            return ""
         definitions_text = f"{self.word}\n"
         for block in definition_blocks:
             try:
