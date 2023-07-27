@@ -60,7 +60,7 @@ class Word(CompatibilityMixin):
     base_url = None
     api = False
     go_to_root = False
-    options = ''
+    options = ""
 
     def __init__(self, word):
         self.word = self.compatible(word) or word
@@ -88,6 +88,7 @@ class Word(CompatibilityMixin):
         self.root_info = self._get_info(self.root_page)
         if not self.root_info.strip():
             raise_word_not_available(request, netloc="www.dwds.de")
+
     @classmethod
     def _only_relevant_part(cls, page: bs4.BeautifulSoup) -> bs4.BeautifulSoup:
         """Returns a page without information that could get in the way
@@ -553,44 +554,42 @@ class ENDictionaryWord(Word):
 
 # Portuguese
 
-DICIO_URL = "https://dicio-api-ten.vercel.app/v2/"
+DICIO_URL = "https://www.dicio.com.br/"
 
 
 class BRDicioWord(Word):
     base_url = DICIO_URL
-    api = True
+    api = False
     go_to_root = False
 
-    def _get_info(self, page):
+    def _get_info(self, page: bs4.BeautifulSoup):
+        meaning = page.find("p", class_="significado").children
         result = ""
-        try:
-            if "error" in page.keys():
-                netloc = urllib.parse.urlparse(DICIO_URL).netloc
-                raise WordNotAvailable(f"Word not available at {netloc}")
-        except AttributeError:
-            pass
-        for info in page:
-            result += info["partOfSpeech"].upper() + "\n"
-            for meaning in info["meanings"]:
-                result += meaning + "\n"
-            result += "\n"
+        for span in meaning:
+            if getattr(span, "class", False) == "cl":
+                result += "\n"*2 + span.text + "\n"*2
+                break
+            result += span.text + "\n"
         return result
 
 # Latin
 
 LAWIKTIONARY_URL = "https://en.wiktionary.org/wiki/"
+
+
 class LAWiktionaryWord(Word):
     base_url = LAWIKTIONARY_URL
     api = False
     go_to_root = False
     options = "?action=raw"
-    def _get_info(self, page:bs4.BeautifulSoup):
+
+    def _get_info(self, page: bs4.BeautifulSoup):
         return page.text
+
     @classmethod
     def _only_relevant_part(cls, page: bs4.BeautifulSoup):
         text = page.text + "==Language==\n"
-        isolate_latin_pattern = re.compile(r'==Latin==(.+?)==[^=]+==\n', re.DOTALL)
+        isolate_latin_pattern = re.compile(r"==Latin==(.+?)==[^=]+==\n", re.DOTALL)
         isolated_latin: re.Match = re.search(isolate_latin_pattern, text)
         result = isolated_latin.groups()[0]
-        return bs4.BeautifulSoup(result, 'html.parser')
-        
+        return bs4.BeautifulSoup(result, "html.parser")

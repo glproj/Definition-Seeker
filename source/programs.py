@@ -4,12 +4,11 @@ from utils import VALID_LANGUAGE_CODES
 from image_extractor import IMAGE_EXTRACTION, get_images_from_word
 
 WORD_PRIMARY_CLASSES = {
+    "br": BRDicioWord,
     "en": ENDictionaryWord,
     "de": DEWiktionaryWord,
-    "br": BRDicioWord,
+    "la": LAWiktionaryWord,
 }
-
-
 class Program(cmd.Cmd):
     word_class = None
     prompt = "Word: "

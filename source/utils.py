@@ -7,7 +7,12 @@ from ipdb import set_trace as s
 CONFIG_PATH = os.path.dirname(os.path.realpath(__file__)) + "/.configfile.ini"
 CONFIG_PARSER = configparser.ConfigParser()
 CONFIG_PARSER.read(CONFIG_PATH)
-VALID_LANGUAGES = {"en": "English", "de": "Deutsch", "br": "Português Brasileiro"}
+VALID_LANGUAGES = {
+    "en": "English",
+    "de": "Deutsch",
+    "br": "Português Brasileiro",
+    "la": "Lingua Latina",
+}
 VALID_LANGUAGE_CODES = VALID_LANGUAGES.keys()
 SUPPORTED_EXTENSIONS = ["epub", "pdf"]
 TRENNBARE_PRÄFIXE = [
@@ -179,7 +184,7 @@ def absolute_file_paths(directory: str) -> list:
     return glob.glob(os.path.join(directory, "**"))
 
 
-def lowercase_extension(image_path: str)->str:
+def lowercase_extension(image_path: str) -> str:
     """Returns image_path but with a lowercase extension
     For example, the path "/dir/GregoryI.JPG" will be turned
     into "/dir/GregoryI.jpg"
