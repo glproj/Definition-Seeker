@@ -593,3 +593,153 @@ class LAWiktionaryWord(Word):
         isolated_latin: re.Match = re.search(isolate_latin_pattern, text)
         result = isolated_latin.groups()[0]
         return bs4.BeautifulSoup(result, "html.parser")
+
+
+# French
+
+FRWIKTIONARY_URL = "https://fr.wiktionary.org/wiki/"
+
+
+class FRWitionaryWord(Word):
+    base_url = FRWIKTIONARY_URL
+    api = False
+    go_to_root = True
+
+    @classmethod
+    def _get_word(cls, page: bs4.BeautifulSoup):
+        page_title = page.find(class_="mw-page-title-main")
+        return page_title.text
+
+    @classmethod
+    def _only_relevant_part(cls, wiktionary_page: bs4.BeautifulSoup):
+        """Returns a BeautifulSoup object without any non-french definitions"""
+        french_id = "Français"
+        language_indicator = wiktionary_page.find(id=french_id).parent
+        below_language_indicator = remove_navigable_strings(
+            language_indicator.next_siblings
+        )
+        only_fr_page = bs4.BeautifulSoup(str(language_indicator), "html.parser")
+        for sibling in below_language_indicator:
+            only_fr_page.append(sibling)
+            if sibling.name == "h2":
+                break
+        only_definitions_page = bs4.BeautifulSoup("", "html.parser")
+
+        definition_titles = [
+            element
+            for element in only_fr_page.find_all("h3")
+            if element.find(class_="titredef") or element.find(class_="titrepron")
+        ]
+        for definition_title in definition_titles:
+            siblings = list(definition_title.next_siblings)
+            only_definitions_page.append(definition_title)
+            for sibling in siblings:
+                if sibling.name == "h3":
+                    break
+                only_definitions_page.append(sibling)
+        return only_definitions_page
+
+    @classmethod
+    def _get_info(cls, page: bs4.BeautifulSoup):
+        definitions_and_examples = page.select("ol:not(.references)")
+        info = ""
+        # each li in the ols above contains a definition along
+        # with a set of usage examples.
+        for ol in definitions_and_examples:
+            gr_info_list = [
+                gr_info for gr_info in ol.previous_siblings if gr_info.name == "h3"
+            ]
+
+            grammatical_info = "NO GRAMMATICAL INFORMATION"
+            if len(gr_info_list) == 0:
+                continue
+            grammatical_info = gr_info_list[0].text
+            more_grammatical_info = ol.previous_sibling.text
+            # remove already known IPA transcription:
+            # The french word chat can be pronounced as \ʃa\ or \tʃat\.
+            # The more common pronunciation is the first of the two, and it is
+            # already going to be included in the output anyway, so we don't need
+            # to include it together with every function of the word that uses this
+            # pronunciation. We are only going to include the IPA transcription in
+            # more_grammatical_info if its IPA transcription contains something different.
+            more_grammatical_info = more_grammatical_info.replace(
+                cls._get_pronunciation(page)[0], ""
+            )
+            word = more_grammatical_info.split(" ")[0]
+            more_grammatical_info = more_grammatical_info.replace(word, "")
+            info += "\n\n" + (
+                grammatical_info.upper().replace("[MODIFIER LE WIKICODE]", "").strip()
+                + "\n"
+                + more_grammatical_info.strip()
+                + "\n"
+            )
+            definitions = ""
+            examples = ""
+            for index, def_tag in enumerate(remove_navigable_strings(ol)):
+                definition_number = f"[{index+1}]"
+                example_list = def_tag.find("ul")
+                examples_li = []
+                if example_list:
+                    examples_li = [
+                        definition_number + example_tag.text
+                        for example_tag in remove_navigable_strings(
+                            example_list.children
+                        )
+                    ]
+                only_definition_tags = [tag for tag in def_tag if tag.name != "ul"]
+                examples_text = "\n".join(examples_li)
+                definition = definition_number
+                definition += "".join(
+                    [
+                        definition_part.text
+                        for definition_part in only_definition_tags
+                        # the example list is the last thing that appears in def_set,
+                        # so we just need to get the text of all its previous siblings
+                        # to get the corresponding definition. But before getting the definition
+                        # we have to reverse the siblings list, since the elements we get from the previous_siblings
+                        # property are in a reversed order.
+                    ]
+                )
+                definitions += definition.strip() + "\n"
+                if examples_text:
+                    examples += examples_text.strip() + "\n"
+            info += "\n" + definitions + "\n\n" + examples
+        return info
+
+    # TODO: redirect to root only when user wants it.
+    @classmethod
+    def _get_pronunciation(cls, page: bs4.BeautifulSoup) -> tuple:
+        first_definition_set = page.select("ol:not(.references)")[0]
+        audio_tags = page.find_all("audio")
+        ipa = first_definition_set.previous_sibling.find(class_="API").text
+        link = list(audio_tags[0].children)[0]["src"]
+        # for audio_tag in audio_tags:
+        #     if audio
+        return (ipa, "https:" + link)
+
+    def _root_page(self) -> bs4.BeautifulSoup:
+        definitions_and_examples = self.page.select("ol:not(.references)")
+        redirect_link = definitions_and_examples[0].find("a")
+        # redirect_link.get("href") will be something like /wiki/femme
+        redirect_word = redirect_link.get("href").split("/")[-1]
+        page_request = SESSION.get(FRWIKTIONARY_URL + redirect_word, timeout=0.8)
+        page_request.raise_for_status()
+        base_word_page = bs4.BeautifulSoup(page_request.text, "html.parser")
+        is_inflection = self._is_inflection_without_own_definition(base_word_page)
+        if is_inflection:
+            return self._root_page(base_word_page)
+        base_word_page = self._only_relevant_part(base_word_page)
+        return (base_word_page, redirect_word)
+
+    @classmethod
+    def _is_inflection_without_own_definition(cls, page: bs4.BeautifulSoup) -> bool:
+        definitions_and_examples = page.select("ol:not(.references)")
+        if len(definitions_and_examples) > 1:
+            return False
+
+        for ol in definitions_and_examples:
+            gr_info_list = [
+                gr_info for gr_info in ol.previous_siblings if gr_info.name == "h3"
+            ]
+            return gr_info_list[0].text.startswith("Forme d")
+
