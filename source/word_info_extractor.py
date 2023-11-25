@@ -174,6 +174,19 @@ class Word(CompatibilityMixin):
         )
         return definition_without_the_word
 
+    @classmethod
+    def isolate_lang(cls, wiktionary_page, lang_id):
+        language_indicator = wiktionary_page.find(id=lang_id).parent
+        below_language_indicator = remove_navigable_strings(
+            language_indicator.next_siblings
+        )
+        isolated_page = bs4.BeautifulSoup(str(language_indicator), "html.parser")
+        for sibling in below_language_indicator:
+            isolated_page.append(sibling)
+            if sibling.name == "h2":
+                break
+        return isolated_page
+
 
 class SecondaryWord(CompatibilityMixin):
     """Base class for other information-fetcher classes.
@@ -404,27 +417,7 @@ class DEWiktionaryWord(Word):
         """Returns a BeautifulSoup object without any non-german definitions"""
         word = cls._get_word(wiktionary_page)
         deutsch_id = f"{word}_(Deutsch)"
-        language_indicator = wiktionary_page.find(id=deutsch_id).parent
-        below_language_indicator = remove_navigable_strings(
-            language_indicator.next_siblings
-        )
-        only_de_page = bs4.BeautifulSoup(str(language_indicator), "html.parser")
-        for sibling in below_language_indicator:
-            try:
-                if sibling.name == "h2":
-                    non_de_id_at_the_end = sibling
-                    non_de_children = list(non_de_id_at_the_end.children)
-                    non_de_children.sort(  # puts an element like <span class="mw-headline" id="ja_(Esperanto)">...</span> at the top
-                        key=lambda x: x.get("id", "bruh").startswith(f"{word}_(")
-                    )
-                    id_ = non_de_children[-1].get("id")
-                    if id_.startswith(
-                        f"{word}_("
-                    ):  # only break if id_ is an actual non-german id
-                        break
-            except (KeyError, TypeError):
-                pass
-            only_de_page.append(sibling)
+        only_de_page = cls.isolate_lang(wiktionary_page, deutsch_id)
         return only_de_page
 
     @classmethod
@@ -481,6 +474,7 @@ class DEWiktionaryWord(Word):
             if "Nachname" in g_info_current:
                 word = self.root
                 result = result.union([word])
+
             elif "Verb" in g_info_current:
                 inflection_cells = inflection_table.find_all("td", colspan=3)
                 for inflection_cell in inflection_cells:
@@ -623,15 +617,7 @@ class FRWitionaryWord(Word):
     def _only_relevant_part(cls, wiktionary_page: bs4.BeautifulSoup):
         """Returns a BeautifulSoup object without any non-french definitions"""
         french_id = "Français"
-        language_indicator = wiktionary_page.find(id=french_id).parent
-        below_language_indicator = remove_navigable_strings(
-            language_indicator.next_siblings
-        )
-        only_fr_page = bs4.BeautifulSoup(str(language_indicator), "html.parser")
-        for sibling in below_language_indicator:
-            only_fr_page.append(sibling)
-            if sibling.name == "h2":
-                break
+        only_fr_page = cls.isolate_lang(wiktionary_page, french_id)
         only_definitions_page = bs4.BeautifulSoup("", "html.parser")
 
         definition_titles = [
@@ -752,3 +738,9 @@ class FRWitionaryWord(Word):
             ]
             return gr_info_list[0].text.startswith("Forme d")
 
+
+# Russian (English)
+
+
+class ENRUWiktionaryWord(Word):
+    pass
