@@ -74,7 +74,7 @@ class Word(CompatibilityMixin):
             self.page = json.loads(request.text)
 
         self.ipa, self.pronunciation_url = self._get_pronunciation(self.page)
-        if self.go_to_root and self.is_inflection_without_own_definition(self.page):
+        if self.go_to_root and self._is_inflection_without_own_definition(self.page):
             self.root_page, self.root = self._root_page()
             self.root_ipa, self.root_pronunciation_url = self._get_pronunciation(
                 self.root_page
@@ -87,7 +87,7 @@ class Word(CompatibilityMixin):
             )
         self.root_info = self._get_info(self.root_page)
         if not self.root_info.strip():
-            raise_word_not_available(request, netloc="www.dwds.de")
+            raise_word_not_available(request)
 
     @classmethod
     def _only_relevant_part(cls, page: bs4.BeautifulSoup) -> bs4.BeautifulSoup:
@@ -105,8 +105,7 @@ class Word(CompatibilityMixin):
 
     @classmethod
     def _get_info(cls, page: bs4.BeautifulSoup) -> str:
-        """Returns an iterator with every section of information about
-        the word
+        """Returns a string with information about the word
 
         Args:
             page (bs4.BeautifulSoup): word page
@@ -125,6 +124,12 @@ class Word(CompatibilityMixin):
         """
         return ("", "")
 
+    def _is_inflection_without_own_definition(cls, page: bs4.BeautifulSoup) -> bool:
+        """Returns True when the word from wiktionary_page comes
+        from another word and the wiktonary_page doesn't
+        provide a definition for it."""
+        return
+
     def _root_page(self) -> bs4.BeautifulSoup:
         """Returns the root page of self.word and the root word.
         For example, if you use de.wikipedia.org to get the definition
@@ -139,7 +144,7 @@ class Word(CompatibilityMixin):
         Returns:
             (bs4.BeautifulSoup, str): (root page of self.word, root word)
         """
-        pass
+        return (bs4.BeautifulSoup("", "html.parser"), "")
 
     def format_info(self, definitions, examples, show_phonetic_info=False):
         """Returns padronized word information
@@ -420,10 +425,10 @@ class DEWiktionaryWord(Word):
         return only_de_page
 
     @classmethod
-    def is_inflection_without_own_definition(cls, wiktionary_page: bs4.BeautifulSoup):
+    def _is_inflection_without_own_definition(cls, wiktionary_page: bs4.BeautifulSoup):
         """Returns True when the word from wiktionary_page comes
         from another word and the wiktonary_page doesn't
-        provide a definition"""
+        provide a definition for it."""
         return wiktionary_page.find(
             title="Grammatische Merkmale"
         ) and not wiktionary_page.find(title="Sinn und Bezeichnetes (Semantik)")
@@ -567,10 +572,11 @@ class BRDicioWord(Word):
         result = ""
         for span in meaning:
             if getattr(span, "class", False) == "cl":
-                result += "\n"*2 + span.text + "\n"*2
+                result += "\n" * 2 + span.text + "\n" * 2
                 break
             result += span.text + "\n"
         return result
+
 
 # Latin
 
