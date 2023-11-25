@@ -377,7 +377,7 @@ class DEWiktionaryWord(Word):
         page_request = SESSION.get(WIKTIONARY_URL + word, timeout=0.8)
         page_request.raise_for_status()
         base_word_page = bs4.BeautifulSoup(page_request.text, "html.parser")
-        is_inflection = self.is_inflection_without_own_definition(base_word_page)
+        is_inflection = self._is_inflection_without_own_definition(base_word_page)
         if is_inflection:
             return self._root_page(base_word_page)
         base_word_page = self._only_relevant_part(base_word_page)
@@ -386,9 +386,12 @@ class DEWiktionaryWord(Word):
     @classmethod
     def _get_pronunciation(cls, page):
         ipa = page.find(class_="ipa").text
-        link_to_pronunciation = (
-            "https:" + page.find(class_="aplay").next_sibling["href"]
-        )
+        try:
+            link_to_pronunciation = (
+                "https:" + page.find(class_="aplay").next_sibling["href"]
+            )
+        except:
+            return ("Unavailable", "")
         return (ipa, link_to_pronunciation)
 
     @classmethod
