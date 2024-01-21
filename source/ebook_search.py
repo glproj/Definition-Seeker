@@ -5,6 +5,12 @@ from utils import VALID_LANGUAGE_CODES
 from utils import *
 
 EBOOK_DIR = Path(__file__).parent / "ebooks"
+
+
+class WrongFileType(Exception):
+    pass
+
+
 def setup_ebooks():
     try:
         for language in VALID_LANGUAGE_CODES:
@@ -13,11 +19,12 @@ def setup_ebooks():
             for ebook_path in ebook_paths:
                 ebook_name = os.path.splitext(os.path.basename(ebook_path))[0]
                 ebook_txt_path = (
-                    pathlib.Path(__file__).parent / f"ebooks/{language}/{ebook_name}.txt"
+                    pathlib.Path(__file__).parent
+                    / f"ebooks/{language}/{ebook_name}.txt"
                 )
                 if ebook_txt_path.exists():
                     continue
-                elif ebook_path.endswith('epub'):
+                elif ebook_path.endswith("epub"):
                     ebook_txt = str(epub_to_bs(str(ebook_path)).text)
                 elif ebook_path.endswith("txt"):
                     with open(ebook_path, "r") as txt:
@@ -29,6 +36,8 @@ def setup_ebooks():
                         previous_page_text = ""
                         pages = remove_common(*[page.get_text() for page in viewer])
                         ebook_txt = "\n".join(pages)
+                else:
+                    raise WrongFileType(ebook_path + " is not a pdf, epub or txt file")
                 print(f"Setting up {ebook_name}...")
                 ebook_txt_path.parent.mkdir(exist_ok=True, parents=True)
                 ebook_txt_path.write_text(ebook_txt)
