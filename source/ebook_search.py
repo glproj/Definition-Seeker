@@ -19,7 +19,10 @@ def setup_ebooks():
                     continue
                 elif ebook_path.endswith('epub'):
                     ebook_txt = str(epub_to_bs(str(ebook_path)).text)
-                elif ebook_path.endswith('pdf'):
+                elif ebook_path.endswith("txt"):
+                    with open(ebook_path, "r") as txt:
+                        ebook_txt = txt.read()
+                elif ebook_path.endswith("pdf"):
                     with open(ebook_path, "rb") as pdf:
                         viewer = fitz.open(pdf)
                         common_stuff = set()
