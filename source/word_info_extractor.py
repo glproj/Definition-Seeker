@@ -744,6 +744,8 @@ class FRWitionaryWord(Word):
             info += "\n" + definitions + "\n\n" + examples
         return info
 
+    def get_inflections(self):
+        return self.root
     # TODO: redirect to root only when user wants it.
     @classmethod
     def _get_pronunciation(cls, page: bs4.BeautifulSoup) -> tuple:
