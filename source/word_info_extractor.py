@@ -750,12 +750,13 @@ class FRWitionaryWord(Word):
     @classmethod
     def _get_pronunciation(cls, page: bs4.BeautifulSoup) -> tuple:
         first_definition_set = page.select("ol:not(.references)")[0]
-        audio_tags = page.find_all("audio")
         ipa = first_definition_set.previous_sibling.find(class_="API").text
-        link = list(audio_tags[0].children)[0]["src"]
-        # for audio_tag in audio_tags:
-        #     if audio
-        return (ipa, "https:" + link)
+        audio_tags = page.find_all("span", {"class":"audio-pronunciation"})
+        fr_audio_tags = filter(lambda el: "France" in el.text, audio_tags)
+        fr_audio_links = map(lambda fr_el: fr_el.find("source")["src"], fr_audio_tags)
+        #TODO: get the user to chose from the list of audios (maybe adding the region)
+        link = list(fr_audio_links)[0]
+        return (ipa, "http:"+link)
 
     def _root_page(self) -> bs4.BeautifulSoup:
         definitions_and_examples = self.page.select("ol:not(.references)")
