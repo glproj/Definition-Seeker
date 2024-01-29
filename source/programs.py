@@ -186,15 +186,15 @@ class Program(cmd.Cmd):
             inflections = tuple([word])
         else:
             inflections = self.previous_word.get_inflections()
-        for lang, book_list in self.ebook_lang_name_txt.items():
+        for lang, book_name_text in self.ebook_lang_name_txt.items():
             if lang != self.lang:
                 continue
-            book_list = [
+            book_name_text = [
                 (name, txt)
-                for book_name_txt in book_list
+                for book_name_txt in book_name_text
                 for name, txt in book_name_txt.items()
             ]
-            for book_name, book_txt in book_list:
+            for book_name, book_txt in book_name_text:
                 examples = ebook_search.get_examples(inflections, book_txt)
                 for example in examples:
                     print(
