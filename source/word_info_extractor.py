@@ -422,8 +422,8 @@ class DEWiktionaryWord(Word):
 
     @classmethod
     def _get_word(cls, wiktionary_page: bs4.BeautifulSoup):
-        page_title = wiktionary_page.find(id=re.compile(r"_\(Deutsch\)"))
-        return "_".join(page_title.text.split(" ")[:-1])
+        page_title = wiktionary_page.find(class_="mw-page-title-main").text
+        return page_title
 
     @classmethod
     def _only_relevant_part(cls, wiktionary_page: bs4.BeautifulSoup):
