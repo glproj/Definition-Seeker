@@ -8,11 +8,15 @@ WORD_PRIMARY_CLASSES = {
     "en": ENDictionaryWord,
     "de": DEWiktionaryWord,
     "la": LAWiktionaryWord,
+    "fr": FRWitionaryWord,
+    "en-ru": ENRUWiktionaryWord,
 }
+
+
 class Program(cmd.Cmd):
     word_class = None
     prompt = "Word: "
-    all_sources = {"de": ["dwds", "duden"], "br": [], "en": []}
+    all_sources = {"de": ["dwds", "duden"], "br": [], "en": [], "fr": [], "en-ru": []}
     lang = CONFIG_PARSER["DEFAULT"]["Language"]
 
     def precmd(self, line):
@@ -22,7 +26,8 @@ class Program(cmd.Cmd):
             if cmd in sources and lang != self.lang:
                 print(
                     f"Change you language to {VALID_LANGUAGES[lang]} before using this command.",
-                    f"Your current language is {self.lang}.", file=self.stdout
+                    f"Your current language is {self.lang}.",
+                    file=self.stdout,
                 )
                 return "DO_NOTHING"
         return line
@@ -169,7 +174,10 @@ class Program(cmd.Cmd):
             key_word = arg or self.previous_word
             get_images_from_word(key_word)
         else:
-            print("Your configuration file doesn't have GOOGLE_API_KEY or CX", file=self.stdout)
+            print(
+                "Your configuration file doesn't have GOOGLE_API_KEY or CX",
+                file=self.stdout,
+            )
 
     def do_examples(self, arg):
         """prints examples on the screen"""

@@ -12,6 +12,8 @@ VALID_LANGUAGES = {
     "de": "Deutsch",
     "br": "Português Brasileiro",
     "la": "Lingua Latina",
+    "fr": "Français",
+    "en-ru": "Russian (English)"
 }
 VALID_LANGUAGE_CODES = VALID_LANGUAGES.keys()
 SUPPORTED_EXTENSIONS = ["epub", "pdf"]
