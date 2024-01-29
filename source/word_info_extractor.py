@@ -405,13 +405,19 @@ class DEWiktionaryWord(Word):
 
     @classmethod
     def _get_pronunciation(cls, page):
-        ipa = page.find(class_="ipa").text
+        ipa = ""
+        try:
+            ipa = page.find(class_="ipa").text
+        except:
+            pass
+        link_to_pronunciation = ""
         try:
             link_to_pronunciation = (
                 "https:" + page.find(class_="aplay").next_sibling["href"]
             )
         except:
-            return ("Unavailable", "")
+            pass
+        ipa = ipa.strip().strip("[").strip("]")
         return (ipa, link_to_pronunciation)
 
     @classmethod
