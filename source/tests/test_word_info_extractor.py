@@ -50,19 +50,19 @@ class WiktionaryTestCase(BaseTestCases.BaseTestCase, TestCase):
     def test_is_inflection_without_own_definition(self):
         with self.subTest("ging"):
             self.assertTrue(
-                self.t_class.is_inflection_without_own_definition(
+                self.t_class._is_inflection_without_own_definition(
                     self.word_to_instance_dict["ging"].page
                 )
             )
         with self.subTest("gesucht"):
             self.assertFalse(
-                self.t_class.is_inflection_without_own_definition(
+                self.t_class._is_inflection_without_own_definition(
                     self.word_to_instance_dict["gesucht"].page
                 )
             )
         with self.subTest("Stuhl"):
             self.assertFalse(
-                self.t_class.is_inflection_without_own_definition(
+                self.t_class._is_inflection_without_own_definition(
                     self.word_to_instance_dict["Stuhl"].page
                 )
             )
