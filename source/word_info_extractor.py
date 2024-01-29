@@ -783,7 +783,35 @@ class FRWitionaryWord(Word):
 
 
 # Russian (English)
+ENRUWIKTIONARYURL = "https://en.wiktionary.org/w/index.php?title="
 
 
 class ENRUWiktionaryWord(Word):
-    pass
+    base_url = ENRUWIKTIONARYURL
+
+    @classmethod
+    def _only_relevant_part(cls, page: bs4.BeautifulSoup) -> bs4.BeautifulSoup:
+        russian_id = "Russian"
+        only_ru_page = cls.isolate_lang(page, russian_id)
+        return only_ru_page
+
+    @classmethod
+    def _get_info(cls, page: bs4.BeautifulSoup) -> str:
+        return "adfdsafad fsdafd"
+
+    @classmethod
+    def _get_pronunciation(cls, page: bs4.BeautifulSoup) -> tuple:
+        ipa = ""
+        try:
+            ipa = page.find(class_="IPA").text
+        except:
+            pass
+        link_to_pronunciation = ""
+        try:
+            link_to_pronunciation = (
+                "https:" + page.find(class_="aplay").next_sibling["href"]
+            )
+        except:
+            pass
+        ipa = ipa.strip().strip("[").strip("]")
+        return (ipa, link_to_pronunciation)
