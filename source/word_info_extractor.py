@@ -524,8 +524,37 @@ class DEWiktionaryWord(Word):
 # ENGLISH
 
 DICTIONARY_URL = "https://www.dictionary.com/browse/"
+ENWIKTIONARY_URL = "https://en.wiktionary.org/wiki/"
 TEMPORARY_DIR = tempfile.TemporaryDirectory()
 TEMPORARY_DIR_PATH = pathlib.Path(TEMPORARY_DIR.name)
+
+
+class ENWiktionaryWord(Word):
+    base_url = ENWIKTIONARY_URL
+
+    @classmethod
+    def _get_info(cls, page) -> str:
+        # TODO
+        return "a"
+
+    @classmethod
+    def _get_pronunciation(cls, page) -> tuple:
+        ipa_tag = page.find(class_="IPA")
+        ipa = "N/A"
+        if ipa_tag:
+            ipa = ipa_tag.text
+        source_audio_tag = page.find("source")
+        link_to_audio = ""
+        if source_audio_tag:
+            link_to_audio = "https:" + source_audio_tag["src"]
+        return (ipa, link_to_audio)
+
+    @classmethod
+    def _only_relevant_part(cls, wiktionary_page: bs4.BeautifulSoup):
+        """Returns a BeautifulSoup object without any non-english definitions"""
+        en_id = "English"
+        only_en_page = cls.isolate_lang(wiktionary_page, en_id)
+        return only_en_page
 
 
 class ENDictionaryWord(Word):
@@ -542,7 +571,8 @@ class ENDictionaryWord(Word):
         pronunciation = gtts.gTTS(self.word, tld="us")
         with open(path_to_pronunciation, "w+b") as file:
             pronunciation.write_to_fp(file)
-        return (ipa, f"file://{path_to_pronunciation}")
+        wik = ENWiktionaryWord(self.word)
+        return (wik.ipa, wik.pronunciation_url or f"file://{path_to_pronunciation}")
 
     def _get_info(self, page: bs4.BeautifulSoup):
         definition_blocks = page.find_all(attrs={"data-type": "word-definitions"})
