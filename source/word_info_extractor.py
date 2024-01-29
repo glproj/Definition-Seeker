@@ -176,6 +176,13 @@ class Word(CompatibilityMixin):
 
     @classmethod
     def isolate_lang(cls, wiktionary_page, lang_id):
+        """Isolate specific language in a wiktionary page.
+
+        Args:
+            wiktionary_page: page to narrow;
+            lang_id: id of the span element that marks different languages."""
+        # usually, the element with id {lang_id} will be a
+        # span inside an h2 tag. We want that h2 tag.
         language_indicator = wiktionary_page.find(id=lang_id).parent
         below_language_indicator = remove_navigable_strings(
             language_indicator.next_siblings

@@ -45,7 +45,6 @@ def setup_ebooks():
         pass
 
 
-
 def epub_to_bs(epub_path: str):
     """Picks all EpubHtmls from the epub file and returns a nice BeautifulSoup object with them"""
     book = ebooklib.epub.read_epub(epub_path, options={"ignore_ncx": True})
@@ -82,7 +81,7 @@ def red_groups(match: re.Match) -> str:
         span_group = match.span(i + 1)
         start, end = span_group[0] - full_start, span_group[1] - full_start
         full_match = slice_with_red_color(full_match, start, end)
-        full_start-=9
+        full_start -= 9
     return full_match
 
 
@@ -119,7 +118,7 @@ def get_examples(words, book_txt):
                 rf"^[^.?!]*?\b({stem})\b[\w\s]*?({preffix})[.!?]",
             ]
             compiled_patterns = [
-                re.compile(pattern, flags=re.MULTILINE ) for pattern in patterns
+                re.compile(pattern, flags=re.MULTILINE) for pattern in patterns
             ]
             bs4_examples = [
                 findall_with_red_groups(pattern, book_txt)
