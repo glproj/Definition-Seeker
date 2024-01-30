@@ -1,4 +1,4 @@
-import requests, bs4, re, pathlib, urllib, json, gtts, tempfile
+import requests, bs4, re, pathlib, urllib, json, gtts, tempfile, unidecode
 from utils import *
 from collections import Counter
 
@@ -606,7 +606,9 @@ class BRDicioWord(Word):
     base_url = DICIO_URL
     api = False
     go_to_root = False
-
+    def compatible(self, word):
+        return unidecode.unidecode(word)
+        
     def _get_info(self, page: bs4.BeautifulSoup):
         meaning = page.find("p", class_="significado").children
         result = ""

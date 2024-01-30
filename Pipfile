@@ -59,6 +59,8 @@ urllib3 = "==1.26.14"
 wcwidth = "==0.2.6"
 ipdb = "*"
 pymupdf = "*"
+unidecode = "*"
+pytest = "*"
 
 [dev-packages]
 ipython = "==8.10.0"
