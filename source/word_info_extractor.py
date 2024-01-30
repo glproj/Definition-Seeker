@@ -20,8 +20,9 @@ def raise_word_not_available_404(request: requests.Request):
 
 
 class WordNotAvailable(Exception):
-    pass
-
+    def __init__(self, message="Word not found."):
+        self.message = message
+        super().__init__(self.message)
 
 class CompatibilityMixin:
     @classmethod
