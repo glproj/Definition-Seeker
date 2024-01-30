@@ -629,18 +629,68 @@ class LAWiktionaryWord(Word):
     base_url = LAWIKTIONARY_URL
     api = False
     go_to_root = False
-    options = "?action=raw"
-
-    def _get_info(self, page: bs4.BeautifulSoup):
-        return page.text
 
     @classmethod
-    def _only_relevant_part(cls, page: bs4.BeautifulSoup):
-        text = page.text + "==Language==\n"
-        isolate_latin_pattern = re.compile(r"==Latin==(.+?)==[^=]+==\n", re.DOTALL)
-        isolated_latin: re.Match = re.search(isolate_latin_pattern, text)
-        result = isolated_latin.groups()[0]
-        return bs4.BeautifulSoup(result, "html.parser")
+    def _get_word(cls, page: bs4.BeautifulSoup):
+        return page.find("strong", {"class": "Latn headword"}).text
+
+    def _get_info(self, page: bs4.BeautifulSoup):
+        head_words = page.find_all("strong", {"class": "Latn headword"})
+        info = ""
+        for head_word in head_words:
+            definitions = []
+            examples = []
+            grammar = head_word.find_previous("h4").text.upper().replace("[EDIT]", "")
+            if not (grammar in info):
+                definitions.append(grammar)
+            # prevents repeating information
+            title_definition = head_word.find_parent("p").text.strip()
+            definitions.append(title_definition)
+            definition_list = head_word.find_next("ol")
+            if definition_list.find("dl"):
+                examples.append(title_definition)
+            for id, li in enumerate(remove_navigable_strings(definition_list.children)):
+                examples_tags = li.find_all("span", {"class": "h-usage-example"})
+                try:
+                    corresponding_definition_tags = reversed(
+                        remove_navigable_strings(
+                            # the definition is right above the list of examples
+                            li.find("dl").previous_siblings
+                        )
+                    )
+                except AttributeError:
+                    # no examples implies that the li contains only the definition
+                    corresponding_definition_tags = li
+                corresponding_definition = " ".join(
+                    list(
+                        map(
+                            lambda el: el.text,
+                            # reverse it to get the order right
+                            corresponding_definition_tags,
+                        )
+                    )
+                )
+                definitions.append(f"[{id+1}] {corresponding_definition}")
+                if examples_tags:
+                    for example in examples_tags:
+                        examples.append(f"[{id+1}] {example.text}")
+            info += self.format_info(definitions, examples, True, False) + "\n"
+        info = info.replace(self._get_word(page), "_")
+        return info
+
+    @classmethod
+    def _only_relevant_part(cls, page: bs4.BeautifulSoup) -> bs4.BeautifulSoup:
+        latin_id = "Latin"
+        only_la_page = cls.isolate_lang(page, latin_id)
+        return only_la_page
+
+    @classmethod
+    def _get_pronunciation(cls, page: bs4.BeautifulSoup) -> tuple:
+        ecclesiastical_pron_li = page.select_one(
+            'li:-soup-contains("modern Italianate Ecclesiastical")'
+        )
+        ecclesiastical_ipa = ecclesiastical_pron_li.find("span", {"class": "IPA"}).text
+        return (ecclesiastical_ipa, "")
 
 
 # French
