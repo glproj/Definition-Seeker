@@ -145,8 +145,12 @@ class Word(CompatibilityMixin):
             (bs4.BeautifulSoup, str): (root page of self.word, root word)
         """
         return (bs4.BeautifulSoup("", "html.parser"), "")
-
-    def format_info(self, definitions, examples, show_phonetic_info=False):
+    @classmethod
+    def _get_word(cls, page):
+        return ""
+    def format_info(
+        self, definitions, examples, show_phonetic_info=False, show_root=True
+    ):
         """Returns padronized word information
 
         Args:
@@ -154,13 +158,11 @@ class Word(CompatibilityMixin):
             examples (iterable): iterable with examples
             show_phonetic_info (bool, optional): self-describing. Defaults to False.
         """
-        info = ""
-        for definition in definitions:
-            info += definition + "\n"
-        info += "\n"
-        for example in examples:
-            info += example + "\n"
-        definition_without_the_word = info.replace(self.root, "_")
+        info = "\n".join(definitions)
+        if len(examples) > 0:
+            info += f"\n\nEXAMPLES:\n"
+        info += "\n".join(examples)
+        info = info.replace(self.root, "_")
         if show_phonetic_info:
             audio_section = (
                 f"Phonetics: {self.root_ipa} {self.root_pronunciation_url}"
@@ -169,10 +171,8 @@ class Word(CompatibilityMixin):
             )
         else:
             audio_section = ""
-        definition_without_the_word = (
-            f"\n{self.root}\n{audio_section}\n{definition_without_the_word}"
-        )
-        return definition_without_the_word
+        info = f"{self.root if show_root else ''}\n{audio_section}\n{info}"
+        return info
 
     @classmethod
     def isolate_lang(cls, wiktionary_page, lang_id):
@@ -181,9 +181,12 @@ class Word(CompatibilityMixin):
         Args:
             wiktionary_page: page to narrow;
             lang_id: id of the span element that marks different languages."""
-        # usually, the element with id {lang_id} will be a
-        # span inside an h2 tag. We want that h2 tag.
-        language_indicator = wiktionary_page.find(id=lang_id).parent
+        try:
+            # usually, the element with id {lang_id} will be a
+            # span inside an h2 tag. We want that h2 tag.
+            language_indicator = wiktionary_page.find(id=lang_id).parent
+        except AttributeError:
+            raise WordNotAvailable("Word not found. Maybe you missed the language?")
         below_language_indicator = remove_navigable_strings(
             language_indicator.next_siblings
         )
@@ -798,17 +801,18 @@ class FRWitionaryWord(Word):
 
     def get_inflections(self):
         return self.root
+
     # TODO: redirect to root only when user wants it.
     @classmethod
     def _get_pronunciation(cls, page: bs4.BeautifulSoup) -> tuple:
         first_definition_set = page.select("ol:not(.references)")[0]
         ipa = first_definition_set.previous_sibling.find(class_="API").text
-        audio_tags = page.find_all("span", {"class":"audio-pronunciation"})
+        audio_tags = page.find_all("span", {"class": "audio-pronunciation"})
         fr_audio_tags = filter(lambda el: "France" in el.text, audio_tags)
         fr_audio_links = map(lambda fr_el: fr_el.find("source")["src"], fr_audio_tags)
-        #TODO: get the user to chose from the list of audios (maybe adding the region)
+        # TODO: get the user to chose from the list of audios (maybe adding the region)
         link = list(fr_audio_links)[0]
-        return (ipa, "http:"+link)
+        return (ipa, "http:" + link)
 
     def _root_page(self) -> bs4.BeautifulSoup:
         definitions_and_examples = self.page.select("ol:not(.references)")
