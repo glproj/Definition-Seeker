@@ -24,6 +24,7 @@ class WordNotAvailable(Exception):
         self.message = message
         super().__init__(self.message)
 
+
 class CompatibilityMixin:
     @classmethod
     def compatible(self, word):
@@ -146,9 +147,11 @@ class Word(CompatibilityMixin):
             (bs4.BeautifulSoup, str): (root page of self.word, root word)
         """
         return (bs4.BeautifulSoup("", "html.parser"), "")
+
     @classmethod
     def _get_word(cls, page):
         return ""
+
     def format_info(
         self, definitions, examples, show_phonetic_info=False, show_root=True
     ):
@@ -233,6 +236,98 @@ class SecondaryWord(CompatibilityMixin):
             str: audio url
         """
         return False
+
+
+class WiktionaryWord(Word):
+    base_url = ""
+    # id of the h2 > span containing the header of the language
+    # for example span#English => lang_id = English
+    lang_id = ""
+    # pron_li_text = "Audio (US)" or just "(US)", for example
+    # go in an en.wiktionary page and see elements with class "unicode audiolink"
+    pron_li_text = ""
+    api = False
+    go_to_root = False
+
+    @classmethod
+    def _get_word(cls, page: bs4.BeautifulSoup):
+        return page.find("strong", {"class": "headword"}).text
+
+    def _get_info(self, page: bs4.BeautifulSoup):
+        head_words = page.find_all("strong", {"class": "headword"})
+        info = ""
+        for head_word in head_words:
+            definitions = []
+            examples = []
+            grammar = (
+                head_word.find_previous(["h4", "h3"]).text.upper().replace("[EDIT]", "")
+            )
+            if not (grammar in info):
+                definitions.append(grammar)
+            # prevents repeating information
+            title_definition = head_word.find_parent("p").text.strip()
+            definitions.append(title_definition)
+            definition_list = head_word.find_next("ol")
+            if definition_list.find("dl"):
+                examples.append(title_definition)
+            for id, li in enumerate(remove_navigable_strings(definition_list.children)):
+                examples_tags = li.find_all("span", {"class": "h-usage-example"})
+                try:
+                    corresponding_definition_tags = reversed(
+                        list(
+                            # the definition is right above the list of examples
+                            li.find("dl").previous_siblings
+                        )
+                    )
+                except AttributeError:
+                    # no examples implies that the li contains only the definition
+                    corresponding_definition_tags = li
+
+                def get_text(el):
+                    if isinstance(el, bs4.NavigableString):
+                        return str(el)
+                    else:
+                        return el.text
+
+                corresponding_definition = "".join(
+                    list(
+                        map(
+                            get_text,
+                            # reverse it to get the order right
+                            corresponding_definition_tags,
+                        )
+                    )
+                )
+                definitions.append(f"[{id+1}] {corresponding_definition}")
+                if examples_tags:
+                    for example in examples_tags:
+                        examples.append(f"[{id+1}] {example.text}")
+            info += self.format_info(definitions, examples, False, False) + "\n"
+        info = info.replace(self._get_word(page), "_")
+        return info
+
+    @classmethod
+    def _only_relevant_part(cls, page: bs4.BeautifulSoup) -> bs4.BeautifulSoup:
+        only_la_page = cls.isolate_lang(page, cls.lang_id)
+        return only_la_page
+
+    @classmethod
+    def _get_pronunciation(cls, page: bs4.BeautifulSoup) -> tuple:
+        pron_li = page.select_one(f'li:-soup-contains("{cls.pron_li_text}")')
+        try:
+            ipa = ""
+            ipa_ul = page.find("span", {"class": "IPA"}).parent.parent
+            for li in ipa_ul.find_all("li"):
+                if li.find("span", {"class": "IPA"}):
+                    ipa += li.text.strip() + "\n"
+            ipa = ipa.replace("(key)", "")
+        except AttributeError:
+            ipa = ""
+        try:
+            link = "http:" + pron_li.find("source").get("src")
+        except AttributeError:
+            link = ""
+        return (ipa, link)
 
 
 # GERMAN
@@ -533,32 +628,10 @@ TEMPORARY_DIR = tempfile.TemporaryDirectory()
 TEMPORARY_DIR_PATH = pathlib.Path(TEMPORARY_DIR.name)
 
 
-class ENWiktionaryWord(Word):
+class ENWiktionaryWord(WiktionaryWord):
     base_url = ENWIKTIONARY_URL
-
-    @classmethod
-    def _get_info(cls, page) -> str:
-        # TODO
-        return "a"
-
-    @classmethod
-    def _get_pronunciation(cls, page) -> tuple:
-        ipa_tag = page.find(class_="IPA")
-        ipa = "N/A"
-        if ipa_tag:
-            ipa = ipa_tag.text
-        source_audio_tag = page.find("source")
-        link_to_audio = ""
-        if source_audio_tag:
-            link_to_audio = "https:" + source_audio_tag["src"]
-        return (ipa, link_to_audio)
-
-    @classmethod
-    def _only_relevant_part(cls, wiktionary_page: bs4.BeautifulSoup):
-        """Returns a BeautifulSoup object without any non-english definitions"""
-        en_id = "English"
-        only_en_page = cls.isolate_lang(wiktionary_page, en_id)
-        return only_en_page
+    lang_id = "English"
+    pron_li_text = "Audio (US)"
 
 
 class ENDictionaryWord(Word):
@@ -610,9 +683,10 @@ class BRDicioWord(Word):
     base_url = DICIO_URL
     api = False
     go_to_root = False
+
     def compatible(self, word):
         return unidecode.unidecode(word)
-        
+
     def _get_info(self, page: bs4.BeautifulSoup):
         meaning = page.find("p", class_="significado").children
         result = ""
@@ -629,72 +703,11 @@ class BRDicioWord(Word):
 LAWIKTIONARY_URL = "https://en.wiktionary.org/wiki/"
 
 
-class LAWiktionaryWord(Word):
+class LAWiktionaryWord(WiktionaryWord):
     base_url = LAWIKTIONARY_URL
-    api = False
-    go_to_root = False
+    pron_li_text = "modern Italianate Ecclesiastical"
+    lang_id = "Latin"
 
-    @classmethod
-    def _get_word(cls, page: bs4.BeautifulSoup):
-        return page.find("strong", {"class": "Latn headword"}).text
-
-    def _get_info(self, page: bs4.BeautifulSoup):
-        head_words = page.find_all("strong", {"class": "Latn headword"})
-        info = ""
-        for head_word in head_words:
-            definitions = []
-            examples = []
-            grammar = head_word.find_previous("h4").text.upper().replace("[EDIT]", "")
-            if not (grammar in info):
-                definitions.append(grammar)
-            # prevents repeating information
-            title_definition = head_word.find_parent("p").text.strip()
-            definitions.append(title_definition)
-            definition_list = head_word.find_next("ol")
-            if definition_list.find("dl"):
-                examples.append(title_definition)
-            for id, li in enumerate(remove_navigable_strings(definition_list.children)):
-                examples_tags = li.find_all("span", {"class": "h-usage-example"})
-                try:
-                    corresponding_definition_tags = reversed(
-                        remove_navigable_strings(
-                            # the definition is right above the list of examples
-                            li.find("dl").previous_siblings
-                        )
-                    )
-                except AttributeError:
-                    # no examples implies that the li contains only the definition
-                    corresponding_definition_tags = li
-                corresponding_definition = " ".join(
-                    list(
-                        map(
-                            lambda el: el.text,
-                            # reverse it to get the order right
-                            corresponding_definition_tags,
-                        )
-                    )
-                )
-                definitions.append(f"[{id+1}] {corresponding_definition}")
-                if examples_tags:
-                    for example in examples_tags:
-                        examples.append(f"[{id+1}] {example.text}")
-            info += self.format_info(definitions, examples, True, False) + "\n"
-        info = info.replace(self._get_word(page), "_")
-        return info
-
-    @classmethod
-    def _only_relevant_part(cls, page: bs4.BeautifulSoup) -> bs4.BeautifulSoup:
-        latin_id = "Latin"
-        only_la_page = cls.isolate_lang(page, latin_id)
-        return only_la_page
-
-    @classmethod
-    def _get_pronunciation(cls, page: bs4.BeautifulSoup) -> tuple:
-        ecclesiastical_pron_li = page.select_one(
-            'li:-soup-contains("modern Italianate Ecclesiastical")'
-        )
-        ecclesiastical_ipa = ecclesiastical_pron_li.find("span", {"class": "IPA"}).text
-        return (ecclesiastical_ipa, "")
 
 
 # French
@@ -849,32 +862,13 @@ class FRWiktionaryWord(Word):
 ENRUWIKTIONARYURL = "https://en.wiktionary.org/w/index.php?title="
 
 
-class ENRUWiktionaryWord(Word):
+class ENRUWiktionaryWord(WiktionaryWord):
     base_url = ENRUWIKTIONARYURL
+    lang_id = "Russian"
+    pron_li_text = "Audio"
 
-    @classmethod
-    def _only_relevant_part(cls, page: bs4.BeautifulSoup) -> bs4.BeautifulSoup:
-        russian_id = "Russian"
-        only_ru_page = cls.isolate_lang(page, russian_id)
-        return only_ru_page
+    def _get_pronunciation(self, page):
+        ipa, link = super()._get_pronunciation(page)
+        return ipa.replace("IPA:", "").strip(), link
 
-    @classmethod
-    def _get_info(cls, page: bs4.BeautifulSoup) -> str:
-        return "adfdsafad fsdafd"
 
-    @classmethod
-    def _get_pronunciation(cls, page: bs4.BeautifulSoup) -> tuple:
-        ipa = ""
-        try:
-            ipa = page.find(class_="IPA").text
-        except:
-            pass
-        link_to_pronunciation = ""
-        try:
-            link_to_pronunciation = (
-                "https:" + page.find(class_="aplay").next_sibling["href"]
-            )
-        except:
-            pass
-        ipa = ipa.strip().strip("[").strip("]")
-        return (ipa, link_to_pronunciation)
