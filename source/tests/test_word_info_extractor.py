@@ -4,9 +4,13 @@ sys.path.append(str(pathlib.Path(__file__).parent.parent))
 from unittest import TestCase, main
 from word_info_extractor import *
 
+
 class BaseTestCases:
     class BaseTestCase(TestCase):
         words = []
+        # {communio: ["/komˈmuː.ni.oː/", "http://url/to/audio"]}, for example
+        # communio should be in words
+        ipa_dict = {}
 
         @classmethod
         def setUpClass(cls):
@@ -14,6 +18,7 @@ class BaseTestCases:
             for word in cls.words:
                 instance = cls.class_(word)
                 word_to_instance_dict.update({word: instance})
+            cls.frst = word_to_instance_dict[cls.words[0]]
             cls.word_to_instance_dict = word_to_instance_dict
             cls.t_class = DEWiktionaryWord
 
@@ -22,6 +27,13 @@ class BaseTestCases:
                 with self.subTest(word):
                     result = self.word_to_instance_dict[word].root_info
                     self.assertIsNot("", result)
+
+        def test_get_pronunciation(self):
+            for word, phonetics in self.ipa_dict.items():
+                inst = self.word_to_instance_dict[word]
+                self.assertIn(phonetics[0], inst.root_ipa)
+                self.assertIn(phonetics[1], inst.pronunciation_url)
+
         def test_error(self):
             with self.assertRaises(WordNotAvailable):
                 self.class_("fjdkslafjdsklfjldsçfjksdalfjfjkdslaçfjdskla")
@@ -42,6 +54,12 @@ class WiktionaryTestCase(BaseTestCases.BaseTestCase):
         "Junge",  # weird table compared to other nouns. It's also a surname
         "ja",  # present in multiple languages
     )
+    ipa_dict = {
+        "Stuhl": [
+            "ʃtuːl",
+            "De-Stuhl.ogg",
+        ]
+    }
     class_ = DEWiktionaryWord
 
     def test_is_inflection_without_own_definition(self):
@@ -76,14 +94,6 @@ class WiktionaryTestCase(BaseTestCases.BaseTestCase):
         with self.assertRaises(WordNotAvailable):
             DEWiktionaryWord("bruh123")
 
-    def test_get_pronunciation(self):
-        pronunciation_url = self.word_to_instance_dict["Stuhl"].pronunciation_url
-        ipa = self.word_to_instance_dict["Stuhl"].root_ipa
-        self.assertEqual(
-            f"{ipa} {pronunciation_url}",
-            "ʃtuːl https://upload.wikimedia.org/wikipedia/commons/3/38/De-Stuhl.ogg",
-        )
-
     def test_get_info_wiktionary(self):
         pass
 
@@ -107,6 +117,12 @@ class DWDSTestCase(BaseTestCases.BaseTestCase):
     )
     class_ = DWDSWord
 
+    ipa_dict = {
+        "Junge": [
+            "ˈjʊŋə",
+            "der_Junge.mp3",
+        ]
+    }
     def test_get_info_dwds(self):
         page = self.word_to_instance_dict["Stuhl"].root_info
         self.assertIn("bildlich", page)
@@ -122,6 +138,12 @@ class DudenTestCase(BaseTestCases.BaseTestCase):
         "Junge",  # weird table compared to other nouns. It's also a surname
         "ja",  # present in multiple languages
     )
+    ipa_dict = {
+        "Stuhl": [
+            "St",
+            "https://cdn.duden.de/_media_/audio/",
+        ]
+    }
     class_ = DudenWord
 
 
@@ -135,19 +157,43 @@ class ENDictionaryTestCase(BaseTestCases.BaseTestCase):
     class_ = ENDictionaryWord
 
 
-class ENRUWiktionaryTestCase(BaseTestCases.BaseTestCase):
+class WiktionaryTestCases:
+    class WiktionaryTestCase(BaseTestCases.BaseTestCase):
+        def test_no_key(self):
+            inst = self.frst
+            self.assertNotIn("(key)", inst.root_ipa)
+
+
+class ENRUWiktionaryTestCase(WiktionaryTestCases.WiktionaryTestCase):
     words = ("твое", "твой", "Санкт-Петербург")
+    ipa_dict = {
+        "Санкт-Петербург": [
+            "ˌsankt pʲɪtʲɪrˈburk",
+            "Ru-%D0%A1%D0%B0%D0%BD%D0%BA%D1%82-%D0%9F%D0%B5%D1%82%D0%B5%D1%80%D0%B1%D1%83%D1%80%D0%B3.ogg",
+        ]
+    }
     class_ = ENRUWiktionaryWord
+
+    def test_no_IPA(self):
+        inst = self.frst
+        self.assertNotIn("IPA:", inst.root_ipa)
 
 
 class FRWitionaryTestCase(BaseTestCases.BaseTestCase):
     words = ("milieu", "cigale", "été", "de_nouveau")
-    class_ = FRWitionaryWord
+    ipa_dict = {"de_nouveau": ["də nu.vo", "Fr-de_nouveau.ogg"]}
+    class_ = FRWiktionaryWord
 
 
-class LAWiktionaryTestCase(BaseTestCases.BaseTestCase):
-    words = ("cum", "communio")
+class LAWiktionaryTestCase(WiktionaryTestCases.WiktionaryTestCase):
+    words = ("cum", "communio", "homo")
+    ipa_dict = {"communio": ["/komˈmuː.ni.oː/", ""]}
     class_ = LAWiktionaryWord
+
+    def test_h3_as_grammar(self):
+        # the "homo" page has the word Noun written in a h3.
+        # other pages have it written in an h4.
+        self.assertIn("NOUN", self.word_to_instance_dict["homo"].root_info)
 
 
 if __name__ == "__main__":
