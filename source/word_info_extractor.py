@@ -812,7 +812,10 @@ class FRWitionaryWord(Word):
         fr_audio_tags = filter(lambda el: "France" in el.text, audio_tags)
         fr_audio_links = map(lambda fr_el: fr_el.find("source")["src"], fr_audio_tags)
         # TODO: get the user to chose from the list of audios (maybe adding the region)
-        link = list(fr_audio_links)[0]
+        try:
+            link = list(fr_audio_links)[0]
+        except IndexError:
+            link = ""
         return (ipa, "http:" + link)
 
     def _root_page(self) -> bs4.BeautifulSoup:
