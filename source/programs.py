@@ -16,16 +16,21 @@ WORD_PRIMARY_CLASSES = {
 class Program(cmd.Cmd):
     word_class = None
     prompt = "Word: "
-    all_sources = {"de": ["dwds", "duden"], "br": [], "en": [], "fr": [], "en-ru": []}
+    all_sources = {
+        "de": {"dwds": DWDSWord, "duden": DudenWord},
+        "br": {},
+        "en": {"dict": ENDictionaryWord},
+        "fr": {},
+        "en-ru": {},
+    }
     lang = CONFIG_PARSER["DEFAULT"]["Language"]
 
     def precmd(self, line):
         cmd, arg, line = self.parseline(line)
-        list_of_sources = [source for s in self.all_sources.values() for source in s]
         for lang, sources in self.all_sources.items():
-            if cmd in sources and lang != self.lang:
+            if cmd in sources.keys() and lang != self.lang:
                 print(
-                    f"Change you language to {VALID_LANGUAGES[lang]} before using this command.",
+                    f"Change your language to {VALID_LANGUAGES[lang]} before using this command.",
                     f"Your current language is {self.lang}.",
                     file=self.stdout,
                 )
@@ -107,9 +112,14 @@ class Program(cmd.Cmd):
                             line = "EOF"
                         else:
                             line = line.rstrip("\r\n")
+                # try:
                 line = self.precmd(line)
                 stop = self.onecmd(line)
                 stop = self.postcmd(stop, line)
+                # except WordNotAvailable as e:
+                #     print(e)
+                # except Exception as e:
+                #     print("Some error occurried.")
             self.postloop()
         finally:
             if self.use_rawinput and self.completekey:
@@ -201,15 +211,6 @@ class Program(cmd.Cmd):
                         termcolor.colored(book_name.upper(), "blue"), file=self.stdout
                     )
                     print(example + "\n", file=self.stdout)
-
-    def do_dwds(self, word):
-        dwds_word = DWDSWord(word or self.previous_word.root)
-        print(dwds_word.root_info, file=self.stdout)
-
-    def do_duden(self, word):
-        duden_word = DudenWord(word or self.previous_word.root)
-        print(duden_word.root_info, file=self.stdout)
-
     def _get(self, attr: str, default):
         try:
             return getattr(self, attr)
@@ -220,7 +221,14 @@ class Program(cmd.Cmd):
         directory = ebook_search.EBOOK_DIR
         dir_paths = absolute_file_paths(directory)
         from collections import defaultdict
-
+        for sources in self.all_sources.values():
+            for source_name, source_class in sources.items():
+                def source_func(source_class):
+                    def s(word):
+                        w = source_class(word or self.previous_word.root)
+                        print(w.root_info, file=self.stdout)
+                    return s
+                setattr(self, "do_"+source_name, source_func(source_class))
         # {lang: [{name: txt}]}
         self.ebook_lang_name_txt = defaultdict(list)
         for dir_path in dir_paths:
@@ -240,3 +248,5 @@ class TestProgram(Program):
 
     def postcmd(self, stop, line):
         return True
+
+
