@@ -5,10 +5,10 @@ from image_extractor import IMAGE_EXTRACTION, get_images_from_word
 
 WORD_PRIMARY_CLASSES = {
     "br": BRDicioWord,
-    "en": ENDictionaryWord,
+    "en": ENWiktionaryWord,
     "de": DEWiktionaryWord,
     "la": LAWiktionaryWord,
-    "fr": FRWitionaryWord,
+    "fr": FRWiktionaryWord,
     "en-ru": ENRUWiktionaryWord,
 }
 
