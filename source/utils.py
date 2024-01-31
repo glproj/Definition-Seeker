@@ -16,7 +16,7 @@ VALID_LANGUAGES = {
     "en-ru": "Russian (English)"
 }
 VALID_LANGUAGE_CODES = VALID_LANGUAGES.keys()
-SUPPORTED_EXTENSIONS = ["epub", "pdf"]
+SUPPORTED_EXTENSIONS = ["epub", "pdf", "txt"]
 TRENNBARE_PRÄFIXE = [
     "auseinander",
     "gegenüber",
