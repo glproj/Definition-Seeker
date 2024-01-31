@@ -702,7 +702,7 @@ class LAWiktionaryWord(Word):
 FRWIKTIONARY_URL = "https://fr.wiktionary.org/wiki/"
 
 
-class FRWitionaryWord(Word):
+class FRWiktionaryWord(Word):
     base_url = FRWIKTIONARY_URL
     api = False
     go_to_root = True
