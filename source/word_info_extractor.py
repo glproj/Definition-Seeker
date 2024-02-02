@@ -179,7 +179,7 @@ class Word(CompatibilityMixin):
         return info
 
     @classmethod
-    def isolate_lang(cls, wiktionary_page, lang_id):
+    def isolate_lang(cls, wiktionary_page, lang_id, exact_id=True):
         """Isolate specific language in a wiktionary page.
 
         Args:
@@ -188,7 +188,8 @@ class Word(CompatibilityMixin):
         try:
             # usually, the element with id {lang_id} will be a
             # span inside an h2 tag. We want that h2 tag.
-            language_indicator = wiktionary_page.find(id=lang_id).parent
+            id = lang_id if exact_id else re.compile(lang_id)
+            language_indicator = wiktionary_page.find(id=id).parent
         except AttributeError:
             raise WordNotAvailable("Word not found. Maybe you missed the language?")
         below_language_indicator = remove_navigable_strings(
@@ -239,6 +240,8 @@ class SecondaryWord(CompatibilityMixin):
 
 
 class WiktionaryWord(Word):
+    """Gets information from en.wiktionary.org"""
+
     base_url = "https://en.wiktionary.org/wiki/"
     # id of the h2 > span containing the header of the language
     # for example span#English => lang_id = English
@@ -304,6 +307,7 @@ class WiktionaryWord(Word):
                         examples.append(f"[{id+1}] {example.text}")
             info += self.format_info(definitions, examples, False, False) + "\n"
         info = info.replace(self._get_word(page), "_")
+        info = re.sub(r"\n_\n", "\n", info)
         return info
 
     @classmethod
@@ -485,6 +489,7 @@ class DWDSWord(Word):
 class DEWiktionaryWord(Word):
     go_to_root = True
     base_url = WIKTIONARY_URL
+    lang_id = "Deutsch"
 
     def _root_page(self, page: bs4.BeautifulSoup = False):
         if not page:
@@ -528,14 +533,13 @@ class DEWiktionaryWord(Word):
     def _only_relevant_part(cls, wiktionary_page: bs4.BeautifulSoup):
         """Returns a BeautifulSoup object without any non-german definitions"""
         word = cls._get_word(wiktionary_page)
-        deutsch_id = f"{word}_(Deutsch)"
-        only_de_page = cls.isolate_lang(wiktionary_page, deutsch_id)
+        only_de_page = cls.isolate_lang(wiktionary_page, word + f"_({cls.lang_id})")
         return only_de_page
 
     @classmethod
     def _is_inflection_without_own_definition(cls, wiktionary_page: bs4.BeautifulSoup):
         """Returns True when the word from wiktionary_page comes
-        from another word and the wiktonary_page doesn't
+        from another word and the wiktionary_page doesn't
         provide a definition for it."""
         return wiktionary_page.find(
             title="Grammatische Merkmale"
@@ -852,6 +856,15 @@ class FRWiktionaryWord(Word):
             return gr_info_list[0].text.startswith("Forme d")
 
 
+class ENFRWiktionaryWord(WiktionaryWord):
+    lang_id = "French"
+    pron_li_text = "audio"
+
+
+class DEFRWiktionaryWord(DEWiktionaryWord):
+    lang_id = "Französisch"
+
+
 # Russian (English)
 
 
@@ -862,11 +875,3 @@ class ENRUWiktionaryWord(WiktionaryWord):
     def _get_pronunciation(self, page):
         ipa, link = super()._get_pronunciation(page)
         return ipa.replace("IPA:", "").strip(), link
-
-
-# French (English)
-
-
-class ENFRWiktionaryWord(WiktionaryWord):
-    lang_id = "French"
-    pron_li_text = "audio"

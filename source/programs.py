@@ -20,7 +20,7 @@ class Program(cmd.Cmd):
         "de": {"dwds": DWDSWord, "duden": DudenWord},
         "br": {},
         "en": {"dict": ENDictionaryWord},
-        "fr": {"enfr": ENFRWiktionaryWord},
+        "fr": {"enfr": ENFRWiktionaryWord, "defr": DEFRWiktionaryWord},
         "en-ru": {},
     }
     lang = CONFIG_PARSER["DEFAULT"]["Language"]
