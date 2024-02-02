@@ -239,7 +239,7 @@ class SecondaryWord(CompatibilityMixin):
 
 
 class WiktionaryWord(Word):
-    base_url = ""
+    base_url = "https://en.wiktionary.org/wiki/"
     # id of the h2 > span containing the header of the language
     # for example span#English => lang_id = English
     lang_id = ""
@@ -623,13 +623,11 @@ class DEWiktionaryWord(Word):
 # ENGLISH
 
 DICTIONARY_URL = "https://www.dictionary.com/browse/"
-ENWIKTIONARY_URL = "https://en.wiktionary.org/wiki/"
 TEMPORARY_DIR = tempfile.TemporaryDirectory()
 TEMPORARY_DIR_PATH = pathlib.Path(TEMPORARY_DIR.name)
 
 
 class ENWiktionaryWord(WiktionaryWord):
-    base_url = ENWIKTIONARY_URL
     lang_id = "English"
     pron_li_text = "Audio (US)"
 
@@ -700,14 +698,10 @@ class BRDicioWord(Word):
 
 # Latin
 
-LAWIKTIONARY_URL = "https://en.wiktionary.org/wiki/"
-
 
 class LAWiktionaryWord(WiktionaryWord):
-    base_url = LAWIKTIONARY_URL
     pron_li_text = "modern Italianate Ecclesiastical"
     lang_id = "Latin"
-
 
 
 # French
@@ -859,11 +853,9 @@ class FRWiktionaryWord(Word):
 
 
 # Russian (English)
-ENRUWIKTIONARYURL = "https://en.wiktionary.org/w/index.php?title="
 
 
 class ENRUWiktionaryWord(WiktionaryWord):
-    base_url = ENRUWIKTIONARYURL
     lang_id = "Russian"
     pron_li_text = "Audio"
 
@@ -872,3 +864,9 @@ class ENRUWiktionaryWord(WiktionaryWord):
         return ipa.replace("IPA:", "").strip(), link
 
 
+# French (English)
+
+
+class ENFRWiktionaryWord(WiktionaryWord):
+    lang_id = "French"
+    pron_li_text = "audio"

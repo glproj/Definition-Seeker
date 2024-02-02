@@ -20,7 +20,7 @@ class Program(cmd.Cmd):
         "de": {"dwds": DWDSWord, "duden": DudenWord},
         "br": {},
         "en": {"dict": ENDictionaryWord},
-        "fr": {},
+        "fr": {"enfr": ENFRWiktionaryWord},
         "en-ru": {},
     }
     lang = CONFIG_PARSER["DEFAULT"]["Language"]
@@ -211,6 +211,7 @@ class Program(cmd.Cmd):
                         termcolor.colored(book_name.upper(), "blue"), file=self.stdout
                     )
                     print(example + "\n", file=self.stdout)
+
     def _get(self, attr: str, default):
         try:
             return getattr(self, attr)
@@ -221,14 +222,18 @@ class Program(cmd.Cmd):
         directory = ebook_search.EBOOK_DIR
         dir_paths = absolute_file_paths(directory)
         from collections import defaultdict
+
         for sources in self.all_sources.values():
             for source_name, source_class in sources.items():
+
                 def source_func(source_class):
                     def s(word):
                         w = source_class(word or self.previous_word.root)
                         print(w.root_info, file=self.stdout)
+
                     return s
-                setattr(self, "do_"+source_name, source_func(source_class))
+
+                setattr(self, "do_" + source_name, source_func(source_class))
         # {lang: [{name: txt}]}
         self.ebook_lang_name_txt = defaultdict(list)
         for dir_path in dir_paths:
@@ -248,5 +253,3 @@ class TestProgram(Program):
 
     def postcmd(self, stop, line):
         return True
-
-
