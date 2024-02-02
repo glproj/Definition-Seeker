@@ -56,6 +56,4 @@ If you input the word "Exegese", then "Exegese" will turn into the previous word
 
 # Languages
 ## Supported Languages
-English and German
-## To be supported
-Ecclesiastical Latin, Portuguese
+English, German, French, Russian, Latin
