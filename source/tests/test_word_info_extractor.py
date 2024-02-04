@@ -123,6 +123,7 @@ class DWDSTestCase(BaseTestCases.BaseTestCase):
             "der_Junge.mp3",
         ]
     }
+
     def test_get_info_dwds(self):
         page = self.word_to_instance_dict["Stuhl"].root_info
         self.assertIn("bildlich", page)
@@ -162,6 +163,15 @@ class WiktionaryTestCases:
         def test_no_key(self):
             inst = self.frst
             self.assertNotIn("(key)", inst.root_ipa)
+
+
+class ENWiktionaryTestCase(WiktionaryTestCases.WiktionaryTestCase):
+    words = ["house"]
+    ipa_dict = {"house": ["haʊs", "En-us-house-noun.ogg"]}
+    class_ = ENWiktionaryWord
+
+    def test_examples(self):
+        self.assertIn("[2] This is my house and my family's ancestral home", self.frst.root_info)
 
 
 class ENRUWiktionaryTestCase(WiktionaryTestCases.WiktionaryTestCase):

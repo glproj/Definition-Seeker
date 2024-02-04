@@ -274,7 +274,9 @@ class WiktionaryWord(Word):
             if definition_list.find("dl"):
                 examples.append(title_definition)
             for id, li in enumerate(remove_navigable_strings(definition_list.children)):
-                examples_tags = li.find_all("span", {"class": "h-usage-example"})
+                if len(list(li.children))==0:
+                    continue
+                examples_tags = li.select(".h-usage-example")
                 try:
                     corresponding_definition_tags = reversed(
                         list(
@@ -306,7 +308,6 @@ class WiktionaryWord(Word):
                     for example in examples_tags:
                         examples.append(f"[{id+1}] {example.text}")
             info += self.format_info(definitions, examples, False, False) + "\n"
-        info = info.replace(self._get_word(page), "_")
         info = re.sub(r"\n_\n", "\n", info)
         return info
 
