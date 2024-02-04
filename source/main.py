@@ -81,13 +81,13 @@ change your settings later with the --config option"""
 
 print(
     "Current language: " + CONFIG_PARSER["DEFAULT"]["language"],
-    "q=quit",
-    "dwds=dwds' definition for the previous word",
-    "duden=duden's definition for the previous word",
-    "save=save previous word for later use",
-    "images=download 3 images related to the previous word. You can paste them using pause_break",
-    "examples=shows examples of previous word from the books in the configfile",
-    "lang {language code}=change language.Available languages: " + str_valid_lc,
+    "q: quit",
+    "save: save previous word for later use",
+    "examples: shows examples of previous word from the books in the configfile",
+    "lang {language code}: change language. Available languages: " + str_valid_lc,
+    "toggle: quickly change settings.",
+    "setting that can be changed with \"toggle\":",
+    "  show_word: If 0, replace query with _ in output.",
     sep="\n",
 )
 print("-" * 72)

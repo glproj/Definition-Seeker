@@ -90,6 +90,8 @@ class Word(CompatibilityMixin):
         self.root_info = self._get_info(self.root_page)
         if not self.root_info.strip():
             raise_word_not_available(request)
+        if CONFIG_PARSER["DEFAULT"].get("show_word")=="0":
+            self.root_info = self.root_info.replace(self._get_word(self.root_page), "_")
 
     @classmethod
     def _only_relevant_part(cls, page: bs4.BeautifulSoup) -> bs4.BeautifulSoup:
@@ -166,7 +168,6 @@ class Word(CompatibilityMixin):
         if len(examples) > 0:
             info += f"\n\nEXAMPLES:\n"
         info += "\n".join(examples)
-        info = info.replace(self.root, "_")
         if show_phonetic_info:
             audio_section = (
                 f"Phonetics: {self.root_ipa} {self.root_pronunciation_url}"
@@ -876,3 +877,4 @@ class ENRUWiktionaryWord(WiktionaryWord):
     def _get_pronunciation(self, page):
         ipa, link = super()._get_pronunciation(page)
         return ipa.replace("IPA:", "").strip(), link
+

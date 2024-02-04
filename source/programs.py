@@ -212,6 +212,18 @@ class Program(cmd.Cmd):
                     )
                     print(example + "\n", file=self.stdout)
 
+    def do_toggle(self, arg):
+        if arg == "show_word":
+            CONFIG_PARSER["DEFAULT"]["show_word"] = (
+                "1" if CONFIG_PARSER["DEFAULT"].get("show_word") == "0" else "0"
+            )
+            with open(CONFIG_PATH, "w") as config:
+                CONFIG_PARSER.write(config)
+            print("New value: "+CONFIG_PARSER["DEFAULT"].get("show_word"))
+        else:
+            print("Options available: show_word.")
+            print("show_word: show word in definitions.")
+
     def _get(self, attr: str, default):
         try:
             return getattr(self, attr)
