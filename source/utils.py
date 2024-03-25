@@ -231,3 +231,9 @@ def epub_to_bs(epub_path: str):
             ugly_book_html += item.content + bytes("\n", "utf-8")
     book_html = bs4.BeautifulSoup(ugly_book_html, "html.parser")
     return book_html
+
+def setup_empty_config():
+    if not CONFIG_PARSER["DEFAULT"]:
+        CONFIG_PARSER["DEFAULT"] = {"language": list(VALID_LANGUAGE_CODES)[0]}
+        with open(CONFIG_PATH, "w") as config:
+            CONFIG_PARSER.write(config)

@@ -179,16 +179,6 @@ class Program(cmd.Cmd):
         with open(CONFIG_PATH, "w") as file:
             CONFIG_PARSER.write(file)
 
-    def do_images(self, arg):
-        if IMAGE_EXTRACTION:
-            key_word = arg or self.previous_word
-            get_images_from_word(key_word)
-        else:
-            print(
-                "Your configuration file doesn't have GOOGLE_API_KEY or CX",
-                file=self.stdout,
-            )
-
     def do_examples(self, arg):
         """prints examples on the screen"""
         word = arg or self.previous_word
